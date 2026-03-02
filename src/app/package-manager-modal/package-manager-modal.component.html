@@ -12,23 +12,55 @@
 
   @if (mode() === 'new') {
     <div class="toolbar-row">
-      <label class="field">
-        <span>Select Policy Form</span>
-        <input
-          type="text"
-          list="policyFormOptions"
-          [ngModel]="policyFormInput()"
-          (ngModelChange)="onPolicyFormInputChange($event)"
-          placeholder="Search/select policy form"
-        />
-        <datalist id="policyFormOptions">
-          @for (option of policyFormOptions; track option.code) {
-            <option [value]="getPolicyFormOptionLabel(option)"></option>
+      <div class="field">
+        <span id="policy-form-label">Select Policy Form</span>
+        <div
+          class="combo-wrapper"
+          role="combobox"
+          [attr.aria-expanded]="policyFormDropdownOpen() ? 'true' : 'false'"
+          aria-haspopup="listbox"
+          aria-owns="policy-form-listbox"
+        >
+          <input
+            type="text"
+            autocomplete="off"
+            aria-labelledby="policy-form-label"
+            aria-autocomplete="list"
+            aria-controls="policy-form-listbox"
+            [attr.aria-activedescendant]="policyFormHighlightedIndex() >= 0 ? 'pf-opt-' + policyFormHighlightedIndex() : null"
+            [ngModel]="policyFormInput()"
+            (ngModelChange)="onPolicyFormInputChange($event)"
+            (focus)="openPolicyFormDropdown()"
+            (blur)="blurPolicyFormDropdown()"
+            (keydown)="onPolicyFormKeydown($event)"
+            placeholder="Search/select policy form"
+          />
+          <span class="combo-chevron" aria-hidden="true">&#9660;</span>
+          @if (policyFormDropdownOpen()) {
+            <ul class="combo-dropdown" id="policy-form-listbox" role="listbox" aria-labelledby="policy-form-label">
+              @if (filteredPolicyFormOptions().length === 0) {
+                <li class="combo-empty" role="option" aria-disabled="true">No options found</li>
+              }
+              @for (option of filteredPolicyFormOptions(); track option.code; let i = $index) {
+                <li
+                  [id]="'pf-opt-' + i"
+                  role="option"
+                  class="combo-option"
+                  [class.is-highlighted]="i === policyFormHighlightedIndex()"
+                  [attr.aria-selected]="option.code === selectedPolicyFormCode() ? 'true' : 'false'"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="selectPolicyFormOption(option)"
+                >
+                  <span class="option-code">{{ option.code }}</span>
+                  <span class="option-desc">{{ option.description }}</span>
+                </li>
+              }
+            </ul>
           }
-        </datalist>
-      </label>
+        </div>
+      </div>
 
-      <label class="field">
+      <div class="field">
         <span>Package Name</span>
         <input
           type="text"
@@ -36,7 +68,7 @@
           (ngModelChange)="packageNameInput.set($event)"
           placeholder="Enter package name"
         />
-      </label>
+      </div>
 
       <div class="toolbar-action">
         <button class="btn primary" type="button" [disabled]="!canSubmit()" (click)="submit()">
@@ -46,23 +78,54 @@
     </div>
   } @else {
     <div class="toolbar-row">
-      <label class="field">
-        <span>Select Existing Package</span>
-        <input
-          type="text"
-          list="packageOptions"
-          [ngModel]="packagePickerInput()"
-          (ngModelChange)="onPackagePickerInputChange($event)"
-          placeholder="Search/select package"
-        />
-        <datalist id="packageOptions">
-          @for (option of packagePickerOptions(); track option.id) {
-            <option [value]="option.label"></option>
+      <div class="field">
+        <span id="pkg-picker-label">Select Existing Package</span>
+        <div
+          class="combo-wrapper"
+          role="combobox"
+          [attr.aria-expanded]="packagePickerDropdownOpen() ? 'true' : 'false'"
+          aria-haspopup="listbox"
+          aria-owns="pkg-picker-listbox"
+        >
+          <input
+            type="text"
+            autocomplete="off"
+            aria-labelledby="pkg-picker-label"
+            aria-autocomplete="list"
+            aria-controls="pkg-picker-listbox"
+            [attr.aria-activedescendant]="packagePickerHighlightedIndex() >= 0 ? 'pp-opt-' + packagePickerHighlightedIndex() : null"
+            [ngModel]="packagePickerInput()"
+            (ngModelChange)="onPackagePickerInputChange($event)"
+            (focus)="openPackagePickerDropdown()"
+            (blur)="blurPackagePickerDropdown()"
+            (keydown)="onPackagePickerKeydown($event)"
+            placeholder="Search/select package"
+          />
+          <span class="combo-chevron" aria-hidden="true">&#9660;</span>
+          @if (packagePickerDropdownOpen()) {
+            <ul class="combo-dropdown" id="pkg-picker-listbox" role="listbox" aria-labelledby="pkg-picker-label">
+              @if (filteredPackagePickerOptions().length === 0) {
+                <li class="combo-empty" role="option" aria-disabled="true">No packages found</li>
+              }
+              @for (option of filteredPackagePickerOptions(); track option.id; let i = $index) {
+                <li
+                  [id]="'pp-opt-' + i"
+                  role="option"
+                  class="combo-option"
+                  [class.is-highlighted]="i === packagePickerHighlightedIndex()"
+                  [attr.aria-selected]="option.id === selectedPackageId() ? 'true' : 'false'"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="selectPackagePickerOption(option)"
+                >
+                  <span class="option-code">{{ option.label }}</span>
+                </li>
+              }
+            </ul>
           }
-        </datalist>
-      </label>
+        </div>
+      </div>
 
-      <label class="field">
+      <div class="field">
         <span>Package Name</span>
         <input
           type="text"
@@ -70,7 +133,7 @@
           (ngModelChange)="packageNameInput.set($event)"
           placeholder="Package name"
         />
-      </label>
+      </div>
 
       <div class="toolbar-action">
         <button class="btn primary" type="button" [disabled]="!canSubmit()" (click)="submit()">
@@ -80,16 +143,53 @@
     </div>
 
     <div class="secondary-row">
-      <label class="field">
-        <span>Policy Form</span>
-        <input
-          type="text"
-          list="policyFormOptions"
-          [ngModel]="policyFormInput()"
-          (ngModelChange)="onPolicyFormInputChange($event)"
-          placeholder="Search/select policy form"
-        />
-      </label>
+      <div class="field">
+        <span id="policy-form-label-upd">Policy Form</span>
+        <div
+          class="combo-wrapper"
+          role="combobox"
+          [attr.aria-expanded]="policyFormDropdownOpen() ? 'true' : 'false'"
+          aria-haspopup="listbox"
+          aria-owns="policy-form-listbox-upd"
+        >
+          <input
+            type="text"
+            autocomplete="off"
+            aria-labelledby="policy-form-label-upd"
+            aria-autocomplete="list"
+            aria-controls="policy-form-listbox-upd"
+            [attr.aria-activedescendant]="policyFormHighlightedIndex() >= 0 ? 'pfu-opt-' + policyFormHighlightedIndex() : null"
+            [ngModel]="policyFormInput()"
+            (ngModelChange)="onPolicyFormInputChange($event)"
+            (focus)="openPolicyFormDropdown()"
+            (blur)="blurPolicyFormDropdown()"
+            (keydown)="onPolicyFormKeydown($event)"
+            placeholder="Search/select policy form"
+          />
+          <span class="combo-chevron" aria-hidden="true">&#9660;</span>
+          @if (policyFormDropdownOpen()) {
+            <ul class="combo-dropdown" id="policy-form-listbox-upd" role="listbox" aria-labelledby="policy-form-label-upd">
+              @if (filteredPolicyFormOptions().length === 0) {
+                <li class="combo-empty" role="option" aria-disabled="true">No options found</li>
+              }
+              @for (option of filteredPolicyFormOptions(); track option.code; let i = $index) {
+                <li
+                  [id]="'pfu-opt-' + i"
+                  role="option"
+                  class="combo-option"
+                  [class.is-highlighted]="i === policyFormHighlightedIndex()"
+                  [attr.aria-selected]="option.code === selectedPolicyFormCode() ? 'true' : 'false'"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="selectPolicyFormOption(option)"
+                >
+                  <span class="option-code">{{ option.code }}</span>
+                  <span class="option-desc">{{ option.description }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
     </div>
   }
 
