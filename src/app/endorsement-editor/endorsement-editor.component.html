@@ -1,0 +1,241 @@
+<div class="endorsement-editor-container">
+  <mat-sidenav-container class="sidenav-container">
+    <!-- Sidebar with controls and bookmarks -->
+    <mat-sidenav #sidenav mode="side" opened class="outline-sidenav">
+      <div class="sidebar-content">
+        <!-- Endorsement Controls -->
+        <div class="sidebar-controls">
+          <div class="control-row">
+            <button
+              mat-icon-button
+              matTooltip="Load Endorsement"
+              (click)="openFormSelectionDialog()"
+            >
+              <mat-icon>folder_open</mat-icon>
+            </button>
+            @if (pdfService.formDisplayNumber()) {
+              <span class="file-name" [matTooltip]="pdfService.fileName()">
+                {{ pdfService.formDisplayNumber() }}
+              </span>
+            } @else {
+              <span class="file-name placeholder">No endorsement loaded</span>
+            }
+          </div>
+
+          @if (pdfService.hasDocument()) {
+            <div class="control-row zoom">
+              <button
+                mat-icon-button
+                matTooltip="Zoom Out"
+                [disabled]="pdfService.scale() <= 0.5"
+                (click)="onZoomOut()"
+              >
+                <mat-icon>remove</mat-icon>
+              </button>
+              <span class="zoom-info">{{ getZoomPercent() }}%</span>
+              <button
+                mat-icon-button
+                matTooltip="Zoom In"
+                [disabled]="pdfService.scale() >= 3"
+                (click)="onZoomIn()"
+              >
+                <mat-icon>add</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                matTooltip="Fit to Width"
+                (click)="onResetZoom()"
+              >
+                <mat-icon>fit_screen</mat-icon>
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- Preview Button -->
+        @if (pdfService.hasDocument()) {
+          <div class="preview-section">
+            <button
+              mat-raised-button
+              color="primary"
+              [disabled]="isPreviewLoading()"
+              (click)="onPreview()"
+              class="preview-button"
+            >
+              @if (isPreviewLoading()) {
+                <mat-spinner diameter="18" class="button-spinner"></mat-spinner>
+              } @else {
+                <mat-icon>preview</mat-icon>
+              }
+              Preview with Blanks
+            </button>
+
+            <mat-form-field appearance="outline" class="fill-method-select">
+              <mat-label>Fill Method</mat-label>
+              <mat-select [value]="selectedFillMethod()" (selectionChange)="selectedFillMethod.set($event.value)">
+                <mat-option [value]="FillBlankMethod.Overlap">Overlap</mat-option>
+                <mat-option [value]="FillBlankMethod.Replace">Replace</mat-option>
+                <mat-option [value]="FillBlankMethod.Insert">Insert</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        }
+
+        <!-- Bookmarks Header with Navigation -->
+        <div class="outline-header">
+          <mat-icon>bookmark</mat-icon>
+          <span>Blanks</span>
+          @if (pdfService.fileNamePrefix()) {
+            <span
+              class="filter-badge"
+              [matTooltip]="'Filtering by: ' + pdfService.fileNamePrefix()"
+            >
+              {{ pdfService.filteredOutlines().length }}
+            </span>
+          }
+        </div>
+
+        <!-- Blank Navigation -->
+        @if (pdfService.hasDocument() && pdfService.filteredOutlines().length > 0) {
+          <div class="blank-navigation">
+            <button
+              mat-icon-button
+              matTooltip="Previous Blank"
+              [disabled]="currentBlankIndex() <= 0"
+              (click)="previousBlank()"
+            >
+              <mat-icon>skip_previous</mat-icon>
+            </button>
+            <span 
+              class="blank-counter clickable" 
+              matTooltip="Go to current blank"
+              (click)="goToCurrentBlank()"
+            >
+              {{ currentBlankIndex() + 1 }} / {{ pdfService.filteredOutlines().length }}
+            </span>
+            <button
+              mat-icon-button
+              matTooltip="Next Blank"
+              [disabled]="currentBlankIndex() >= pdfService.filteredOutlines().length - 1"
+              (click)="nextBlank()"
+            >
+              <mat-icon>skip_next</mat-icon>
+            </button>
+          </div>
+        }
+
+        <!-- Bookmarks List -->
+        <div class="outline-list" #outlineList>
+          @for (item of pdfService.filteredOutlines(); track item.title + item.pageNumber; let i = $index) {
+            <div 
+              class="outline-item" 
+              [class.active]="currentBlankIndex() === i"
+              [attr.data-blank-index]="i"
+            >
+              <div class="outline-input-row">
+                <span class="blank-number">{{ i + 1 }}</span>
+                <dg-mini-html-editor
+                  #sidebarEditor
+                  [value]="getBookmarkValue(item)"
+                  [placeholder]="getBlankDisplayName(item)"
+                  [config]="sidebarToolbarConfig"
+                  [width]="280"
+                  [maxLength]="500"
+                  (valueChange)="onBookmarkValueChange(item, $event)"
+                  (focus)="onSidebarEditorFocus(i)"
+                />
+                <span
+                  class="go-link"
+                  [matTooltip]="'Go to ' + item.title"
+                  (click)="goToBlank(i)"
+                  >Go</span
+                >
+              </div>
+            </div>
+          }
+          @empty {
+            <div class="empty-bookmarks">
+              <mat-icon>bookmark_border</mat-icon>
+              @if (pdfService.hasDocument()) {
+                <span
+                  >No bookmarks match "{{ pdfService.fileNamePrefix() }}"</span
+                >
+              } @else {
+                <span>Load an endorsement to see bookmarks</span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </mat-sidenav>
+
+    <!-- Main Content Area - PDF Viewer -->
+    <mat-sidenav-content class="main-content" #mainContent (scroll)="onScroll()">
+      @if (isLoading) {
+        <div class="loading-container">
+          <mat-spinner diameter="48"></mat-spinner>
+          <p>Loading endorsement...</p>
+        </div>
+      } @else if (hasError) {
+        <div class="error-container">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          <h2>Error Loading Endorsement</h2>
+          <p>{{ errorMessage }}</p>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="openFormSelectionDialog()"
+          >
+            Try Another Form
+          </button>
+        </div>
+      } @else if (!pdfService.hasDocument()) {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">description</mat-icon>
+          <h2>No Endorsement Loaded</h2>
+          <p>Enter a form display number to load an endorsement</p>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="openFormSelectionDialog()"
+          >
+            <mat-icon>search</mat-icon>
+            Load Endorsement
+          </button>
+        </div>
+      } @else {
+        <div class="pages-container" #pagesContainer>
+          @for (pageNum of pageNumbers(); track pageNum) {
+            <div class="page-wrapper" [attr.data-page]="pageNum">
+              <canvas [id]="'page-' + pageNum" class="pdf-canvas"></canvas>
+              <!-- Overlay for bookmark inputs on this page -->
+              <div class="bookmark-overlay">
+                @for (positioned of getPageBookmarks(pageNum); track positioned.item.title; let blankIdx = $index) {
+                  <div
+                    class="overlay-input-wrapper"
+                    [class.active]="currentBlankIndex() === getGlobalBlankIndex(positioned.item)"
+                    [style.left.px]="positioned.x"
+                    [style.top.px]="positioned.y"
+                    [attr.data-blank-index]="getGlobalBlankIndex(positioned.item)"
+                  >
+                    <dg-mini-html-editor
+                      #overlayEditor
+                      [value]="getBookmarkValue(positioned.item)"
+                      [placeholder]="getBlankDisplayName(positioned.item)"
+                      [config]="overlayToolbarConfig"
+                      [width]="getEditorWidth(positioned.item)"
+                      [maxLength]="500"
+                      (valueChange)="onBookmarkValueChange(positioned.item, $event)"
+                      (focus)="onOverlayEditorFocus(getGlobalBlankIndex(positioned.item))"
+                    />
+                  </div>
+                }
+              </div>
+              <span class="page-label">Page {{ pageNum }}</span>
+            </div>
+          }
+        </div>
+      }
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

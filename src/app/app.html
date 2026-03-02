@@ -1,0 +1,373 @@
+<main class="em-shell" (click)="closeContextMenu()">
+  <header class="em-header">
+    <div>
+      <p class="em-kicker">Endorsement Manager</p>
+      <h1 class="em-title">Select Endorsements</h1>
+    </div>
+    <div class="header-badges">
+      <div class="stage-toggle" role="radiogroup" aria-label="Policy stage">
+        @for (stage of stageOptions; track stage.id) {
+          <label class="stage-pill">
+            <input type="radio" name="policyStage" [value]="stage.id" [(ngModel)]="policyStage" />
+            <span>{{ stage.label }}</span>
+          </label>
+        }
+      </div>
+      @if (isPolicySold) {
+        <span class="policy-sold">Policy Sold</span>
+      }
+      <div class="em-badge">UW2 Migration Pilot</div>
+    </div>
+  </header>
+
+  <section class="em-filter card">
+    <div class="filter-block">
+      <div class="filter-heading">Filter By</div>
+      <div class="filter-grid">
+        <label class="field">
+          <span>Endorsement Number</span>
+          <input
+            type="text"
+            placeholder="Endorsement number"
+            [(ngModel)]="filterNumber"
+            (ngModelChange)="onFilterInputChange('number')"
+            (focus)="onFilterFocus('number')"
+            (blur)="onFilterBlur('number')"
+          />
+        </label>
+        <label class="field">
+          <span>Endorsement Name</span>
+          <input
+            type="text"
+            placeholder="Endorsement name"
+            [(ngModel)]="filterName"
+            (ngModelChange)="onFilterInputChange('name')"
+            (focus)="onFilterFocus('name')"
+            (blur)="onFilterBlur('name')"
+          />
+        </label>
+        <label class="field">
+          <span>Description</span>
+          <input
+            type="text"
+            placeholder="Endorsement description"
+            [(ngModel)]="filterDescription"
+            (ngModelChange)="onFilterInputChange('description')"
+            (focus)="onFilterFocus('description')"
+            (blur)="onFilterBlur('description')"
+          />
+        </label>
+        <div class="filter-actions">
+          <button class="btn accent" type="button" (click)="onClearFilter()">Clear Filter</button>
+        </div>
+      </div>
+    </div>
+    <div class="filter-block">
+      <div class="filter-heading">Endorsement Package</div>
+      <div class="filter-grid package-grid">
+        <label class="field">
+          <span>Please select Endorsement Package (if applicable)</span>
+          <select [(ngModel)]="selectedPackageId">
+            <option value="">-- Select package --</option>
+            @for (pkg of packages; track pkg.id) {
+              <option value="{{ pkg.id }}">{{ getPackageOptionLabel(pkg) }}</option>
+            }
+          </select>
+        </label>
+        <div class="filter-actions">
+          <button class="btn primary" type="button" (click)="addSelectedPackage()">Apply Package</button>
+          <button class="btn primary" type="button" (click)="openCreatePackageModal()">
+            Create Package
+          </button>
+        </div>
+      </div>      
+    </div>
+  </section>
+
+  <section class="em-body">
+    <section class="em-master-stack">
+      <section class="em-master card">
+        <div class="card-title master-title">
+          <div class="master-title-text">
+            Available Endorsements
+            <span class="count-badge">{{ masterCountFiltered }} / {{ masterCountTotal }}</span>
+          </div>
+          <div class="master-actions">
+            <button class="btn small accent" type="button" (click)="toggleExpandAllGroups()">
+              {{ expandAllLabel }}
+            </button>
+            <button class="btn small accent" type="button" (click)="expandSelectedGroups()">
+              Expand Selected
+            </button>
+          </div>
+        </div>
+        <div class="grid-header">
+          <span>Select</span>
+          <span>Form</span>
+        </div>
+        @for (group of availableGroups; track group.number) {
+          <div class="group">
+            <div class="group-row">
+              <button class="icon-button add-button" type="button" (click)="toggleGroup(group.number)">
+                {{ isGroupCollapsed(group.number) ? '+' : '-' }}
+              </button>
+              <span>{{ group.number }} - {{ group.title }}</span>
+            </div>
+            <div class="group-items" [class.is-collapsed]="isGroupCollapsed(group.number)">
+              @for (version of group.versions; track version.id) {
+                <div
+                  class="grid-row version-row"
+                >
+                  <input
+                    class="version-checkbox"
+                    type="checkbox"
+                    [checked]="isVersionSelected(version.id)"
+                    (click)="$event.stopPropagation()"
+                    (change)="toggleVersionSelection(version.id, $any($event.target).checked)"
+                  />
+                  <span class="endorsement-label">
+                    <span class="endorsement-inline">
+                      <span class="endorsement-text">{{ version.code }} - {{ version.name }}</span>
+                      @if (version.description) {
+                        <button
+                          class="info-icon"
+                          type="button"
+                          [attr.aria-label]="'Description for ' + version.code"
+                          (click)="$event.stopPropagation()"
+                        >
+                          i
+                          <span class="info-tooltip" role="tooltip">{{ version.description }}</span>
+                        </button>
+                      }
+                    </span>
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+        <div class="grid-footer">Expand an endorsement and select versions to add.</div>
+      </section>
+    </section>
+
+    <section class="em-right">
+
+      <section class="card selected-card">
+        <div class="card-title selected-title">
+          <div class="selected-title-text">
+            Selected Endorsements
+            <span class="count-badge">{{ selectedCountFiltered }} / {{ selectedCountTotal }}</span>
+          </div>
+          <div class="action-row selected-actions">
+            <button class="btn accent" type="button" (click)="openModal('fill-blanks')">Fill Blanks</button>
+            <button
+              class="btn accent"
+              type="button"
+              (click)="requestClearSelected()"
+              [disabled]="selected.length === 0 || isPolicySold"
+            >
+              Clear List
+            </button>
+            <button
+              class="btn"
+              type="button"
+              [class.mandatory-alert]="hasMandatoryGaps"
+              (click)="requestAddMandatoryEndorsements()"
+            >
+              Get Mandatory Endorsements
+              @if (hasMandatoryGaps) {
+                <span class="mandatory-count">Missing: {{ mandatoryMissingCount }}</span>
+              }
+            </button>
+          </div>
+          <div class="selected-legend em-badge">
+            <div class="legend-item"><span class="legend-swatch invalid"></span>Invalid</div>
+            <div class="legend-item"><span class="legend-swatch removed"></span>Removed</div>
+            <div class="legend-item"><span class="legend-swatch renewal"></span>Renewal</div>
+          </div>
+            <label class="checkbox">
+              <input type="checkbox" [(ngModel)]="showAllSelected" (change)="onShowAllChange()" />
+              <span style="font-weight: normal;">Show All Active/Inactive Selected Endorsements</span>
+            </label>
+        </div> 
+       
+        <div class="grid-header">
+          <span></span>
+          <span>Endorsement</span>
+          <span>Optional</span>
+        </div>
+        <div class="summary-row">
+          <span></span>
+          <span>Optional: {{ selectedOptionalCount }}</span>
+          <span>Removed: {{ selectedRemovedCount }}</span>
+        </div>
+        @for (sel of filteredSelectedDisplay; track sel.instanceId) {
+          <div
+            class="grid-row"
+            [class.selected]="sel.status === 'active'"
+            [class.removed]="sel.status === 'removed'"
+            [class.invalid]="sel.status === 'invalid'"
+            [class.renewal]="sel.status === 'renewal'"
+            (contextmenu)="openSelectedContextMenu($event, sel)"
+          >
+            @if (sel.status === 'removed') {
+              <button
+                class="icon-button add-button"
+                type="button"
+                (click)="$event.stopPropagation(); reinstateSelected(sel.instanceId)"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M11 5h2v14h-2V5zm-6 6h14v2H5v-2z" fill="currentColor" />
+                </svg>
+              </button>
+            } @else {
+              <button
+                class="icon-button trash-button"
+                type="button"
+                (click)="$event.stopPropagation(); requestRemoveSelected(sel.instanceId)"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path
+                    d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9zm1 12h8a2 2 0 0 0 2-2V7H6v12a2 2 0 0 0 2 2z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+            }
+            <span class="endorsement-label" [class.renewal-text]="sel.status === 'renewal'">
+              <span class="endorsement-inline">
+                <span class="endorsement-text">{{ sel.label }}</span>
+                @if (sel.description) {
+                  <button
+                    class="info-icon"
+                    type="button"
+                    [attr.aria-label]="'Description for ' + sel.label"
+                    (click)="$event.stopPropagation()"
+                  >
+                    i
+                    <span class="info-tooltip" role="tooltip">{{ sel.description }}</span>
+                  </button>
+                }
+              </span>
+              @if (showAllSelected && sel.status === 'removed') {
+                <span class="removed-stage">{{ getRemovedStageLabel(sel) }}</span>
+              }
+            </span>
+            <input
+              type="checkbox"
+              [checked]="sel.optional"
+              [disabled]="sel.status === 'removed'"
+              (click)="$event.stopPropagation()"
+              (change)="toggleOptional(sel.instanceId, $any($event.target).checked)"
+            />
+          </div>
+        }
+        <div class="grid-footer">Use the trash icon to remove an endorsement.</div>
+        @if (selectedContextMenuOpen) {
+          <div
+            class="context-menu"
+            [style.left.px]="selectedContextMenuX"
+            [style.top.px]="selectedContextMenuY"
+            (click)="$event.stopPropagation()"
+          >
+            <button class="context-menu-item" type="button" (click)="viewSelectedText()">View Text</button>
+          </div>
+        }
+      </section>
+
+    </section>
+  </section>
+  @if (toastMessage) {
+    <div
+      class="toast"
+      [class.add]="toastKind === 'add'"
+      [class.remove]="toastKind === 'remove'"
+      [class.activate]="toastKind === 'activate'"
+      role="status"
+      aria-live="polite"
+    >
+      {{ toastMessage }}
+    </div>
+  }
+
+  @if (activeModal) {
+    <div class="modal-backdrop" (click)="closeModal()">
+      <div
+        class="modal"
+        [class.view-text]="activeModal === 'view-text'"
+        [class.fill-blanks]="activeModal === 'fill-blanks'"
+        [class.package-manager-modal]="activeModal === 'create-package'"
+        (click)="$event.stopPropagation()"
+      >
+        @if (activeModal === 'fill-blanks') {
+          <div class="modal-header">
+            <h2>Fill Blanks</h2>
+            <button class="btn" type="button" (click)="closeModal()">Close</button>
+          </div>
+          <div class="modal-body fill-blanks-body">
+            <app-endorsement-editor [initialFormDisplayNumber]="fillBlanksFormDisplayNumber"></app-endorsement-editor>
+          </div>
+        } @else if (activeModal === 'view-text') {
+          <div class="modal-header">
+            <h2>View Text</h2>
+            <button class="btn" type="button" (click)="closeModal()">Close</button>
+          </div>
+          <div class="modal-body">
+            <app-view-text-preview [url]="viewTextDocUrl" title="View endorsement text"></app-view-text-preview>
+          </div>
+        } @else if (activeModal === 'confirm-remove') {
+          <div class="modal-header">
+            <h2>Remove endorsement?</h2>
+          </div>
+          <p class="modal-body">
+            Are you sure you want to remove {{ getPendingRemoveLabel() }} from this stage?
+          </p>
+          <div class="modal-actions">
+            <button class="btn" type="button" (click)="cancelRemoveSelected()">Cancel</button>
+            <button class="btn primary" type="button" (click)="confirmRemoveSelected()">Remove</button>
+          </div>
+        } @else if (activeModal === 'confirm-clear') {
+          <div class="modal-header">
+            <h2>Remove all selected endorsements?</h2>
+          </div>
+          <p class="modal-body">
+            Are you sure you want to remove all selected endorsements from this stage?
+          </p>
+          <div class="modal-actions">
+            <button class="btn" type="button" (click)="cancelClearSelected()">Cancel</button>
+            <button class="btn primary" type="button" (click)="confirmClearSelected()">Remove</button>
+          </div>
+        } @else if (activeModal === 'confirm-mandatory') {
+          <div class="modal-header">
+            <h2>Add mandatory endorsements?</h2>
+          </div>
+          <p class="modal-body">
+            This will add any missing mandatory endorsements to the selected list.
+            @if (hasMandatoryGaps) {
+              <span> Missing: {{ mandatoryMissingCount }}.</span>
+            }
+          </p>
+          <div class="modal-actions">
+            <button class="btn" type="button" (click)="cancelAddMandatoryEndorsements()">Cancel</button>
+            <button class="btn primary" type="button" (click)="confirmAddMandatoryEndorsements()">Add</button>
+          </div>
+        } @else if (activeModal === 'create-package') {
+          <div class="modal-header">
+            <h2>Package Management</h2>
+          </div>
+          <app-package-manager-modal
+            [endorsementGroups]="endorsementGroups"
+            [packages]="packages"
+            [packageSelections]="packageSelections"
+            [initiallySelectedVersionIds]="selectedActiveVersionIds"
+            (close)="closeModal()"
+            (createPackage)="onCreatePackage($event)"
+            (updatePackage)="onUpdatePackage($event)"
+          ></app-package-manager-modal>
+        }
+      </div>
+    </div>
+  }
+</main>
+
+

@@ -1,0 +1,322 @@
+<mat-toolbar class="editor-toolbar">
+  <!-- Undo/Redo -->
+  <div class="toolbar-group">
+    <button mat-icon-button 
+            matTooltip="Undo (Ctrl+Z)" 
+            aria-label="Undo"
+            (click)="onUndo()">
+      <mat-icon>undo</mat-icon>
+    </button>
+    <button mat-icon-button 
+            matTooltip="Redo (Ctrl+Y)" 
+            aria-label="Redo"
+            (click)="onRedo()">
+      <mat-icon>redo</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider vertical></mat-divider>
+
+  <!-- Text Formatting -->
+  <div class="toolbar-group">
+    <button mat-icon-button 
+            matTooltip="Bold (Ctrl+B)" 
+            aria-label="Bold"
+            [class.active]="formatting.bold"
+            (click)="onBold()">
+      <mat-icon>format_bold</mat-icon>
+    </button>
+    <button mat-icon-button 
+            matTooltip="Italic (Ctrl+I)" 
+            aria-label="Italic"
+            [class.active]="formatting.italic"
+            (click)="onItalic()">
+      <mat-icon>format_italic</mat-icon>
+    </button>
+    <button mat-icon-button 
+            matTooltip="Underline (Ctrl+U)" 
+            aria-label="Underline"
+            [class.active]="formatting.underline"
+            (click)="onUnderline()">
+      <mat-icon>format_underlined</mat-icon>
+    </button>
+    <button mat-icon-button 
+            class="hide-xs"
+            matTooltip="Strikethrough" 
+            aria-label="Strikethrough"
+            [class.active]="formatting.strikethrough"
+            (click)="onStrikethrough()">
+      <mat-icon>strikethrough_s</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider vertical></mat-divider>
+
+  <!-- Paragraph Style & Colors -->
+  <div class="toolbar-group">
+    <!-- Headings Menu -->
+    <button mat-icon-button 
+            [matMenuTriggerFor]="headingsMenu" 
+            matTooltip="Paragraph Style"
+            aria-label="Paragraph style">
+      <mat-icon>title</mat-icon>
+    </button>
+    <mat-menu #headingsMenu="matMenu">
+      <button mat-menu-item (click)="onParagraph()">
+        <span class="menu-text">Normal Text</span>
+      </button>
+      @for (heading of headingOptions; track heading.tag) {
+        <button mat-menu-item (click)="onHeading(heading)">
+          <span class="menu-text" 
+                [style.font-size]="getHeadingFontSize(heading.tag)"
+                [style.font-weight]="'bold'">
+            {{ heading.label }}
+          </span>
+        </button>
+      }
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="onBlockquote()">
+        <mat-icon>format_quote</mat-icon>
+        <span>Quote</span>
+      </button>
+    </mat-menu>
+
+    <!-- Text Color Menu -->
+    <button mat-icon-button 
+            [matMenuTriggerFor]="textColorMenu" 
+            matTooltip="Text Color"
+            aria-label="Text color">
+      <mat-icon>format_color_text</mat-icon>
+    </button>
+    <mat-menu #textColorMenu="matMenu" class="color-menu">
+      <div class="color-grid" (click)="$event.stopPropagation()">
+        @for (color of textColors; track color.color) {
+          <button mat-icon-button 
+                  class="color-btn" 
+                  [style.background]="color.color"
+                  [attr.aria-label]="color.label"
+                  (click)="onTextColor(color.color)">
+          </button>
+        }
+      </div>
+    </mat-menu>
+
+    <!-- Highlight Color Menu -->
+    <button mat-icon-button 
+            class="hide-sm"
+            [matMenuTriggerFor]="highlightColorMenu" 
+            matTooltip="Highlight Color"
+            aria-label="Highlight color">
+      <mat-icon>format_color_fill</mat-icon>
+    </button>
+    <mat-menu #highlightColorMenu="matMenu" class="color-menu">
+      <div class="color-grid" (click)="$event.stopPropagation()">
+        @for (color of highlightColors; track color.color) {
+          <button mat-icon-button 
+                  class="color-btn" 
+                  [style.background]="color.color"
+                  [class.bordered]="color.color === '#ffffff'"
+                  [attr.aria-label]="color.label"
+                  (click)="onHighlightColor(color.color)">
+          </button>
+        }
+        <button mat-icon-button 
+                class="color-btn clear-format-btn"
+                aria-label="Clear highlight"
+                (click)="onRemoveFormat()">
+          <mat-icon>format_clear</mat-icon>
+        </button>
+      </div>
+    </mat-menu>
+  </div>
+
+  <mat-divider vertical></mat-divider>
+
+  <!-- Alignment -->
+  <div class="toolbar-group hide-md">
+    <button mat-icon-button 
+            matTooltip="Align Left (Ctrl+Shift+L)" 
+            aria-label="Align left"
+            [class.active]="formatting.alignLeft"
+            (click)="onAlignLeft()">
+      <mat-icon>format_align_left</mat-icon>
+    </button>
+    <button mat-icon-button 
+            matTooltip="Align Center (Ctrl+Shift+E)" 
+            aria-label="Align center"
+            [class.active]="formatting.alignCenter"
+            (click)="onAlignCenter()">
+      <mat-icon>format_align_center</mat-icon>
+    </button>
+    <button mat-icon-button 
+            matTooltip="Align Right (Ctrl+Shift+R)" 
+            aria-label="Align right"
+            [class.active]="formatting.alignRight"
+            (click)="onAlignRight()">
+      <mat-icon>format_align_right</mat-icon>
+    </button>
+    <button mat-icon-button 
+            matTooltip="Justify (Ctrl+Shift+J)" 
+            aria-label="Justify"
+            [class.active]="formatting.alignJustify"
+            (click)="onAlignJustify()">
+      <mat-icon>format_align_justify</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider vertical class="hide-md"></mat-divider>
+
+  <!-- Lists -->
+  <div class="toolbar-group">
+    <button mat-icon-button 
+            matTooltip="Bullet List (Ctrl+Shift+8)" 
+            aria-label="Bullet list"
+            [class.active]="formatting.unorderedList"
+            (click)="onUnorderedList()">
+      <mat-icon>format_list_bulleted</mat-icon>
+    </button>
+    <button mat-icon-button 
+            matTooltip="Numbered List (Ctrl+Shift+7)" 
+            aria-label="Numbered list"
+            [class.active]="formatting.orderedList"
+            (click)="onOrderedList()">
+      <mat-icon>format_list_numbered</mat-icon>
+    </button>
+    <button mat-icon-button 
+            class="hide-md"
+            matTooltip="Decrease Indent (Ctrl+[)" 
+            aria-label="Decrease indent"
+            (click)="onOutdent()">
+      <mat-icon>format_indent_decrease</mat-icon>
+    </button>
+    <button mat-icon-button 
+            class="hide-md"
+            matTooltip="Increase Indent (Ctrl+])" 
+            aria-label="Increase indent"
+            (click)="onIndent()">
+      <mat-icon>format_indent_increase</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider vertical></mat-divider>
+
+  <!-- Insert Elements -->
+  <div class="toolbar-group">
+    <button mat-icon-button 
+            matTooltip="Insert Link (Ctrl+K)" 
+            aria-label="Insert link"
+            (click)="onInsertLink()">
+      <mat-icon>link</mat-icon>
+    </button>
+    <button mat-icon-button 
+            class="hide-sm"
+            matTooltip="Insert Image" 
+            aria-label="Insert image"
+            (click)="onInsertImage()">
+      <mat-icon>image</mat-icon>
+    </button>
+    <button mat-icon-button 
+            class="hide-lg"
+            matTooltip="Insert Table" 
+            aria-label="Insert table"
+            (click)="onInsertTable()">
+      <mat-icon>table_chart</mat-icon>
+    </button>
+    <button mat-icon-button 
+            class="hide-lg"
+            matTooltip="Horizontal Line (Alt+H)" 
+            aria-label="Horizontal line"
+            (click)="onInsertHorizontalRule()">
+      <mat-icon>horizontal_rule</mat-icon>
+    </button>
+  </div>
+
+  <span class="toolbar-spacer"></span>
+
+  <!-- Utilities -->
+  <div class="toolbar-group">
+    <button mat-icon-button 
+            class="hide-md"
+            matTooltip="Remove Formatting (Ctrl+\\)" 
+            aria-label="Remove formatting"
+            (click)="onRemoveFormat()">
+      <mat-icon>format_clear</mat-icon>
+    </button>
+
+    <!-- More Options Menu -->
+    <button mat-icon-button 
+            [matMenuTriggerFor]="moreMenu" 
+            matTooltip="More Options"
+            aria-label="More options">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #moreMenu="matMenu">
+      <div class="show-md-only">
+        <button mat-menu-item (click)="onAlignLeft()">
+          <mat-icon>format_align_left</mat-icon>
+          <span>Align Left</span>
+        </button>
+        <button mat-menu-item (click)="onAlignCenter()">
+          <mat-icon>format_align_center</mat-icon>
+          <span>Align Center</span>
+        </button>
+        <button mat-menu-item (click)="onAlignRight()">
+          <mat-icon>format_align_right</mat-icon>
+          <span>Align Right</span>
+        </button>
+        <button mat-menu-item (click)="onIndent()">
+          <mat-icon>format_indent_increase</mat-icon>
+          <span>Increase Indent</span>
+        </button>
+        <button mat-menu-item (click)="onOutdent()">
+          <mat-icon>format_indent_decrease</mat-icon>
+          <span>Decrease Indent</span>
+        </button>
+        <mat-divider></mat-divider>
+      </div>
+
+      <div class="show-sm-only">
+        <button mat-menu-item (click)="onInsertImage()">
+          <mat-icon>image</mat-icon>
+          <span>Insert Image</span>
+        </button>
+      </div>
+      <div class="show-lg-only">
+        <button mat-menu-item (click)="onInsertTable()">
+          <mat-icon>table_chart</mat-icon>
+          <span>Insert Table</span>
+        </button>
+        <button mat-menu-item (click)="onInsertHorizontalRule()">
+          <mat-icon>horizontal_rule</mat-icon>
+          <span>Horizontal Line</span>
+        </button>
+      </div>
+
+      <button mat-menu-item (click)="onRemoveFormat()">
+        <mat-icon>format_clear</mat-icon>
+        <span>Remove Formatting</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="onCopyHtml()">
+        <mat-icon>content_copy</mat-icon>
+        <span>Copy HTML</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="onClearContent()">
+        <mat-icon>delete_outline</mat-icon>
+        <span>Clear All</span>
+      </button>
+    </mat-menu>
+
+    <!-- Source Code Toggle -->
+    @if (showSourceCodeButton()) {
+      <button mat-icon-button 
+              [matTooltip]="isSourceCodeVisible ? 'Hide HTML Code' : 'Show HTML Code'"
+              aria-label="Toggle source code"
+              [class.active]="isSourceCodeVisible"
+              (click)="onToggleSourceCode()">
+        <mat-icon>code</mat-icon>
+      </button>
+    }
+  </div>
+</mat-toolbar>

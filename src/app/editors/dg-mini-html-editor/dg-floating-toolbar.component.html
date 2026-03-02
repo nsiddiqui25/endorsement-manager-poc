@@ -1,0 +1,229 @@
+<div
+  class="floating-toolbar"
+  [class.visible]="visible() || isMenuOpen()"
+  role="toolbar"
+  aria-label="Text formatting"
+  (mousedown)="$event.preventDefault()">
+
+  <!-- Primary formatting buttons -->
+  <div class="toolbar-group primary">
+    @if (config().bold.visible) {
+      <button
+        mat-icon-button
+        type="button"
+        [class.active]="formattingState().bold"
+        [disabled]="config().bold.disabled"
+        matTooltip="Bold (Ctrl+B)"
+        aria-label="Bold"
+        (click)="emitCommand({ type: 'bold' })">
+        <mat-icon>format_bold</mat-icon>
+      </button>
+    }
+
+    @if (config().italic.visible) {
+      <button
+        mat-icon-button
+        type="button"
+        [class.active]="formattingState().italic"
+        [disabled]="config().italic.disabled"
+        matTooltip="Italic (Ctrl+I)"
+        aria-label="Italic"
+        (click)="emitCommand({ type: 'italic' })">
+        <mat-icon>format_italic</mat-icon>
+      </button>
+    }
+
+    @if (config().underline.visible) {
+      <button
+        mat-icon-button
+        type="button"
+        [class.active]="formattingState().underline"
+        [disabled]="config().underline.disabled"
+        matTooltip="Underline (Ctrl+U)"
+        aria-label="Underline"
+        (click)="emitCommand({ type: 'underline' })">
+        <mat-icon>format_underlined</mat-icon>
+      </button>
+    }
+
+    @if (config().strikethrough.visible) {
+      <button
+        mat-icon-button
+        type="button"
+        [class.active]="formattingState().strikethrough"
+        [disabled]="config().strikethrough.disabled"
+        matTooltip="Strikethrough"
+        aria-label="Strikethrough"
+        (click)="emitCommand({ type: 'strikethrough' })">
+        <mat-icon>strikethrough_s</mat-icon>
+      </button>
+    }
+  </div>
+
+  <!-- Undo/Redo -->
+  @if (config().undo.visible || config().redo.visible) {
+    <!-- <mat-divider vertical class="toolbar-divider"></mat-divider> -->
+    <div class="toolbar-group history">
+      @if (config().undo.visible) {
+        <button
+          mat-icon-button
+          type="button"
+          [disabled]="config().undo.disabled"
+          matTooltip="Undo (Ctrl+Z)"
+          aria-label="Undo"
+          (click)="emitCommand({ type: 'undo' })">
+          <mat-icon>undo</mat-icon>
+        </button>
+      }
+
+      @if (config().redo.visible) {
+        <button
+          mat-icon-button
+          type="button"
+          [disabled]="config().redo.disabled"
+          matTooltip="Redo (Ctrl+Y)"
+          aria-label="Redo"
+          (click)="emitCommand({ type: 'redo' })">
+          <mat-icon>redo</mat-icon>
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Color pickers -->
+  @if (config().textColor.visible || config().highlightColor.visible) {
+    <!-- <mat-divider vertical class="toolbar-divider"></mat-divider> -->
+    <div class="toolbar-group colors">
+      @if (config().textColor.visible) {
+        <button
+          mat-icon-button
+          type="button"
+          [matMenuTriggerFor]="textColorMenu"
+          [disabled]="config().textColor.disabled"
+          matTooltip="Text color"
+          aria-label="Text color"
+          (menuOpened)="onMenuOpened()"
+          (menuClosed)="onMenuClosed()">
+          <mat-icon>format_color_text</mat-icon>
+        </button>
+      }
+
+      @if (config().highlightColor.visible) {
+        <button
+          mat-icon-button
+          type="button"
+          [matMenuTriggerFor]="highlightColorMenu"
+          [disabled]="config().highlightColor.disabled"
+          matTooltip="Highlight color"
+          aria-label="Highlight color"
+          (menuOpened)="onMenuOpened()"
+          (menuClosed)="onMenuClosed()">
+          <mat-icon>highlight</mat-icon>
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Clear formatting -->
+  @if (config().clearFormatting.visible) {
+    <!-- <mat-divider vertical class="toolbar-divider"></mat-divider> -->
+    <button
+      mat-icon-button
+      type="button"
+      [disabled]="config().clearFormatting.disabled"
+      matTooltip="Clear formatting"
+      aria-label="Clear formatting"
+      (click)="emitCommand({ type: 'clearFormatting' })">
+      <mat-icon>format_clear</mat-icon>
+    </button>
+  }
+
+  <!-- More options menu -->
+  @if (config().showMoreMenu && hasHiddenOptions()) {
+    <!-- <mat-divider vertical class="toolbar-divider"></mat-divider> -->
+    <button
+      mat-icon-button
+      type="button"
+      [matMenuTriggerFor]="moreMenu"
+      matTooltip="More options"
+      aria-label="More formatting options"
+      (menuOpened)="onMenuOpened()"
+      (menuClosed)="onMenuClosed()">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  }
+</div>
+
+<!-- Text Color Menu -->
+<mat-menu #textColorMenu="matMenu" panelClass="color-picker-menu">
+  <div class="color-grid" (click)="$event.stopPropagation()">
+    @for (color of colors; track color) {
+      <button
+        type="button"
+        class="color-swatch"
+        [style.background-color]="color"
+        [class.selected]="formattingState().textColor === color"
+        [attr.aria-label]="'Text color ' + color"
+        (click)="emitCommand({ type: 'textColor', color })">
+      </button>
+    }
+  </div>
+</mat-menu>
+
+<!-- Highlight Color Menu -->
+<mat-menu #highlightColorMenu="matMenu" panelClass="color-picker-menu">
+  <div class="color-grid" (click)="$event.stopPropagation()">
+    @for (color of colors; track color) {
+      <button
+        type="button"
+        class="color-swatch"
+        [style.background-color]="color"
+        [class.selected]="formattingState().highlightColor === color"
+        [attr.aria-label]="'Highlight color ' + color"
+        (click)="emitCommand({ type: 'highlightColor', color })">
+      </button>
+    }
+  </div>
+</mat-menu>
+
+<!-- More Options Menu -->
+<mat-menu #moreMenu="matMenu">
+  @if (!config().strikethrough.visible) {
+    <button mat-menu-item 
+      [class.active-menu-item]="formattingState().strikethrough"
+      (click)="emitCommand({ type: 'strikethrough' })">
+      <mat-icon>strikethrough_s</mat-icon>
+      <span>Strikethrough</span>
+    </button>
+  }
+  @if (!config().undo.visible) {
+    <button mat-menu-item (click)="emitCommand({ type: 'undo' })">
+      <mat-icon>undo</mat-icon>
+      <span>Undo</span>
+    </button>
+  }
+  @if (!config().redo.visible) {
+    <button mat-menu-item (click)="emitCommand({ type: 'redo' })">
+      <mat-icon>redo</mat-icon>
+      <span>Redo</span>
+    </button>
+  }
+  @if (!config().textColor.visible) {
+    <button mat-menu-item [matMenuTriggerFor]="textColorMenu">
+      <mat-icon>format_color_text</mat-icon>
+      <span>Text color</span>
+    </button>
+  }
+  @if (!config().highlightColor.visible) {
+    <button mat-menu-item [matMenuTriggerFor]="highlightColorMenu">
+      <mat-icon>highlight</mat-icon>
+      <span>Highlight</span>
+    </button>
+  }
+  @if (!config().clearFormatting.visible) {
+    <button mat-menu-item (click)="emitCommand({ type: 'clearFormatting' })">
+      <mat-icon>format_clear</mat-icon>
+      <span>Clear formatting</span>
+    </button>
+  }
+</mat-menu>

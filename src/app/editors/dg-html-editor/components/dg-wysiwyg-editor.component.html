@@ -1,0 +1,19 @@
+<div 
+  #editor
+  class="wysiwyg-content"
+  contenteditable="true"
+  [attr.placeholder]="placeholder()"
+  [attr.contenteditable]="!readonly()"
+  (input)="onInput()"
+  (keydown)="onKeydown($event)"
+  (keyup)="onKeyup()"
+  (mouseup)="onMouseup()"
+  (select)="onSelect()"
+  (paste)="onPaste($event)"
+  (focus)="onFocus()"
+  (blur)="onBlur()"
+  spellcheck="true"
+  role="textbox"
+  aria-multiline="true"
+  aria-label="Rich text editor">
+</div>
