@@ -1,0 +1,142 @@
+/**
+ * DG HTML Editor Styles
+ * @module editors/dg-html-editor
+ */
+
+// Variables
+$border-light: #e0e0e0;
+$border-dark: #404040;
+$bg-light: #ffffff;
+$bg-dark: #1e1e1e;
+
+:host {
+  display: block;
+}
+
+.html-editor {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid $border-light;
+  border-radius: 8px;
+  overflow: hidden;
+  background: $bg-light;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  &.dark-theme {
+    background: $bg-dark;
+    border-color: $border-dark;
+  }
+}
+
+.editor-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 300px;
+}
+
+.wysiwyg-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  background: $bg-light;
+  transition: flex 0.3s ease;
+
+  .dark-theme & {
+    background: $bg-dark;
+  }
+
+  &.with-source {
+    flex: 0.6;
+    border-right: 1px solid $border-light;
+
+    .dark-theme & {
+      border-color: $border-dark;
+    }
+  }
+}
+
+.source-panel {
+  display: flex;
+  flex: 0.4;
+  overflow: hidden;
+}
+
+// ============================================================================
+// Responsive
+// ============================================================================
+
+@media (max-width: 1024px) {
+  .editor-content {
+    flex-direction: column;
+  }
+
+  .wysiwyg-panel {
+    &.with-source {
+      flex: 1;
+      border-right: none;
+      border-bottom: 1px solid $border-light;
+
+      .dark-theme & {
+        border-color: $border-dark;
+      }
+    }
+  }
+
+  .source-panel {
+    flex: 0.5;
+    max-height: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .html-editor {
+    border-radius: 4px;
+  }
+
+  .editor-content {
+    min-height: 280px;
+  }
+
+  .source-panel {
+    max-height: 200px;
+  }
+}
+
+@media (max-width: 640px) {
+  .html-editor {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .editor-content {
+    min-height: 250px;
+  }
+
+  .source-panel {
+    max-height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .source-panel {
+    max-height: 150px;
+  }
+}
+
+// ============================================================================
+// Print
+// ============================================================================
+
+@media print {
+  .html-editor {
+    border: none;
+    box-shadow: none;
+  }
+
+  .source-panel {
+    display: none !important;
+  }
+}

@@ -1,0 +1,233 @@
+/**
+ * Source Code Panel Styles
+ * @module editors/dg-html-editor/components
+ */
+
+$font-mono: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+$line-height: 1.6;
+
+// Syntax highlighting colors (light)
+$hl-tag: #881280;
+$hl-attr: #994500;
+$hl-value: #1a1aa6;
+$hl-comment: #008000;
+$hl-bracket: #0000ff;
+$hl-entity: #e53935;
+$hl-doctype: #808080;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.source-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.source-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #666;
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .header-title {
+    flex: 1;
+  }
+
+  .close-btn {
+    width: 28px;
+    height: 28px;
+
+    mat-icon {
+      font-size: 18px;
+    }
+  }
+}
+
+.source-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.line-numbers {
+  width: 50px;
+  padding: 12px 8px;
+  text-align: right;
+  font-family: $font-mono;
+  font-size: 13px;
+  line-height: $line-height;
+  color: #999;
+  background: #f5f5f5;
+  border-right: 1px solid #e0e0e0;
+  overflow: hidden;
+  user-select: none;
+  white-space: pre;
+  flex-shrink: 0;
+}
+
+.code-area {
+  position: relative;
+  flex: 1;
+  overflow: auto;
+  background: #fff;
+}
+
+.highlight-layer {
+  padding: 12px;
+  font-family: $font-mono;
+  font-size: 13px;
+  line-height: $line-height;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: #333;
+}
+
+.code-textarea {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: $font-mono;
+  font-size: 13px;
+  line-height: $line-height;
+  background: transparent;
+  color: transparent;
+  caret-color: #333;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow: auto;
+
+  &::selection {
+    background: rgba(51, 144, 255, 0.3);
+  }
+}
+
+// Syntax highlighting
+.syntax-highlight {
+  .hl-tag { color: $hl-tag; }
+  .hl-attr, .hl-attribute { color: $hl-attr; }
+  .hl-value, .hl-string { color: $hl-value; }
+  .hl-comment { color: $hl-comment; font-style: italic; }
+  .hl-bracket, .hl-punctuation { color: $hl-bracket; }
+  .hl-entity { color: $hl-entity; }
+  .hl-doctype { color: $hl-doctype; }
+}
+
+// ============================================================================
+// Responsive
+// ============================================================================
+
+@media (max-width: 768px) {
+  .line-numbers {
+    width: 40px;
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+
+  .highlight-layer, .code-textarea {
+    padding: 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .source-header {
+    padding: 6px 10px;
+    font-size: 11px;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+
+    .close-btn {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .line-numbers {
+    width: 35px;
+    padding: 8px 4px;
+    font-size: 11px;
+  }
+
+  .highlight-layer, .code-textarea {
+    padding: 8px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .line-numbers {
+    display: none;
+  }
+}
+
+// ============================================================================
+// Dark Theme
+// ============================================================================
+
+:host-context(.dark-theme) {
+  background: #1e1e1e;
+
+  .source-header {
+    background: #1e1e1e;
+    border-color: #404040;
+    color: #d4d4d4;
+  }
+
+  .line-numbers {
+    color: #858585;
+    background: #1e1e1e;
+    border-color: #404040;
+  }
+
+  .code-area {
+    background: #252526;
+  }
+
+  .highlight-layer {
+    color: #d4d4d4;
+  }
+
+  .code-textarea {
+    caret-color: #d4d4d4;
+  }
+
+  .syntax-highlight {
+    .hl-tag { color: #569cd6; }
+    .hl-attr, .hl-attribute { color: #9cdcfe; }
+    .hl-value, .hl-string { color: #ce9178; }
+    .hl-comment { color: #6a9955; }
+    .hl-bracket, .hl-punctuation { color: #808080; }
+    .hl-entity { color: #4fc1ff; }
+    .hl-doctype { color: #608b4e; }
+  }
+}

@@ -1,0 +1,144 @@
+<section class="package-manager" aria-label="Package management modal">
+  <div class="mode-row" role="radiogroup" aria-label="Package mode">
+    <label class="mode-pill">
+      <input type="radio" name="packageMode" [checked]="mode() === 'new'" (change)="setMode('new')" />
+      <span>New Package</span>
+    </label>
+    <label class="mode-pill">
+      <input type="radio" name="packageMode" [checked]="mode() === 'update'" (change)="setMode('update')" />
+      <span>Update Existing Package</span>
+    </label>
+  </div>
+
+  @if (mode() === 'new') {
+    <div class="toolbar-row">
+      <label class="field">
+        <span>Select Policy Form</span>
+        <input
+          type="text"
+          list="policyFormOptions"
+          [ngModel]="policyFormInput()"
+          (ngModelChange)="onPolicyFormInputChange($event)"
+          placeholder="Search/select policy form"
+        />
+        <datalist id="policyFormOptions">
+          @for (option of policyFormOptions; track option.code) {
+            <option [value]="getPolicyFormOptionLabel(option)"></option>
+          }
+        </datalist>
+      </label>
+
+      <label class="field">
+        <span>Package Name</span>
+        <input
+          type="text"
+          [ngModel]="packageNameInput()"
+          (ngModelChange)="packageNameInput.set($event)"
+          placeholder="Enter package name"
+        />
+      </label>
+
+      <div class="toolbar-action">
+        <button class="btn primary" type="button" [disabled]="!canSubmit()" (click)="submit()">
+          Create Package
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="toolbar-row">
+      <label class="field">
+        <span>Select Existing Package</span>
+        <input
+          type="text"
+          list="packageOptions"
+          [ngModel]="packagePickerInput()"
+          (ngModelChange)="onPackagePickerInputChange($event)"
+          placeholder="Search/select package"
+        />
+        <datalist id="packageOptions">
+          @for (option of packagePickerOptions(); track option.id) {
+            <option [value]="option.label"></option>
+          }
+        </datalist>
+      </label>
+
+      <label class="field">
+        <span>Package Name</span>
+        <input
+          type="text"
+          [ngModel]="packageNameInput()"
+          (ngModelChange)="packageNameInput.set($event)"
+          placeholder="Package name"
+        />
+      </label>
+
+      <div class="toolbar-action">
+        <button class="btn primary" type="button" [disabled]="!canSubmit()" (click)="submit()">
+          Update Package
+        </button>
+      </div>
+    </div>
+
+    <div class="secondary-row">
+      <label class="field">
+        <span>Policy Form</span>
+        <input
+          type="text"
+          list="policyFormOptions"
+          [ngModel]="policyFormInput()"
+          (ngModelChange)="onPolicyFormInputChange($event)"
+          placeholder="Search/select policy form"
+        />
+      </label>
+    </div>
+  }
+
+  <div class="card-grid">
+    <section class="list-card">
+      <div class="list-title">Available Endorsements</div>
+      <div class="list-search">
+        <input
+          type="text"
+          [ngModel]="availableSearch()"
+          (ngModelChange)="availableSearch.set($event)"
+          placeholder="Search available endorsements"
+        />
+      </div>
+      <div class="list-body">
+        @for (version of availableVersions(); track version.id) {
+          <div class="list-row">
+            <button class="icon-button add-button" type="button" (click)="moveToSelected(version.id)">+</button>
+            <span>{{ version.code }} - {{ version.name }}</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="list-card">
+      <div class="list-title">Selected Endorsements ({{ selectedCount() }})</div>
+      <div class="list-search">
+        <input
+          type="text"
+          [ngModel]="selectedSearch()"
+          (ngModelChange)="selectedSearch.set($event)"
+          placeholder="Search selected endorsements"
+        />
+      </div>
+      <div class="list-body">
+        @for (version of selectedVersions(); track version.id) {
+          <div class="list-row">
+            <button class="icon-button trash-button" type="button" (click)="moveToAvailable(version.id)">-</button>
+            <span>{{ version.code }} - {{ version.name }}</span>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-actions">
+    <button class="btn" type="button" (click)="closeModal()">Cancel</button>
+    <button class="btn primary" type="button" [disabled]="!canSubmit()" (click)="submit()">
+      {{ mode() === 'new' ? 'Create Package' : 'Update Package' }}
+    </button>
+  </div>
+</section>

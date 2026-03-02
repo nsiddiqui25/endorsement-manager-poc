@@ -1,0 +1,44 @@
+<div 
+  class="html-editor" 
+  [class.dark-theme]="theme() === 'dark'"
+  [style.min-height]="minHeight()">
+  
+  <!-- Toolbar -->
+  @if (showToolbar()) {
+    <dg-editor-toolbar 
+      (sourceCodeToggled)="onSourceCodeToggled()">
+    </dg-editor-toolbar>
+  }
+
+  <!-- Editor Content Area -->
+  <div class="editor-content">
+    
+    <!-- WYSIWYG Editor -->
+    <div class="wysiwyg-panel" [class.with-source]="showSourceCode">
+      <dg-wysiwyg-editor
+        #wysiwygEditor
+        [placeholder]="placeholder()"
+        [readonly]="readonly()"
+        (contentChanged)="onContentChanged($event)"
+        (focused)="onEditorFocused()"
+        (blurred)="onEditorBlurred()">
+      </dg-wysiwyg-editor>
+    </div>
+
+    <!-- Source Code Panel -->
+    @if (showSourceCode) {
+      <div class="source-panel">
+        <dg-source-code-panel
+          [showLineNumbers]="showLineNumbers()"
+          [readonly]="true"
+          (closed)="onSourceCodeToggled()">
+        </dg-source-code-panel>
+      </div>
+    }
+  </div>
+
+  <!-- Status Bar -->
+  @if (showStatusBar()) {
+    <dg-editor-status-bar></dg-editor-status-bar>
+  }
+</div>

@@ -1,0 +1,20 @@
+<footer class="status-bar">
+  <div class="status-item">
+    <span class="status-label">Words:</span>
+    <span class="status-value">{{ wordCount() }}</span>
+  </div>
+  
+  <div class="status-item">
+    <span class="status-label">Characters:</span>
+    <span class="status-value">{{ characterCount() }}</span>
+  </div>
+  
+  <span class="status-spacer"></span>
+  
+  @if (isFocused()) {
+    <div class="status-item status-focused">
+      <mat-icon class="status-icon">edit</mat-icon>
+      <span>Editing</span>
+    </div>
+  }
+</footer>

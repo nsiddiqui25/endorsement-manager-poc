@@ -1,0 +1,240 @@
+/**
+ * Editor Toolbar Styles
+ * @module editors/dg-html-editor/components
+ */
+
+// Breakpoints
+$breakpoint-xs-max: 479px;
+$breakpoint-sm-max: 639px;
+$breakpoint-md-max: 767px;
+$breakpoint-lg-max: 1023px;
+
+:host {
+  display: block;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  min-height: 48px;
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.toolbar-spacer {
+  flex: 1;
+  min-width: 8px;
+}
+
+mat-divider[vertical] {
+  height: 24px;
+  margin: 0 6px;
+  opacity: 0.3;
+  flex-shrink: 0;
+}
+
+button[mat-icon-button] {
+  width: 34px;
+  height: 34px;
+  line-height: 34px;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+  flex-shrink: 0;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+  }
+
+  &.active {
+    background-color: rgba(25, 118, 210, 0.15);
+    color: #1976d2;
+  }
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+  }
+}
+
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 8px;
+}
+
+.color-btn {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  border-radius: 4px !important;
+  padding: 0 !important;
+
+  &.bordered {
+    border: 1px solid #ccc;
+  }
+
+  &.clear-format-btn {
+    background: #fff;
+
+    mat-icon {
+      font-size: 14px !important;
+      width: 14px !important;
+      height: 14px !important;
+      color: #666;
+    }
+  }
+}
+
+.menu-text {
+  font-size: 14px;
+}
+
+// ============================================================================
+// Responsive Utilities
+// ============================================================================
+
+.hide-xs {
+  @media (max-width: $breakpoint-xs-max) {
+    display: none !important;
+  }
+}
+
+.hide-sm {
+  @media (max-width: $breakpoint-sm-max) {
+    display: none !important;
+  }
+}
+
+.hide-md {
+  @media (max-width: $breakpoint-md-max) {
+    display: none !important;
+  }
+}
+
+.hide-lg {
+  @media (max-width: $breakpoint-lg-max) {
+    display: none !important;
+  }
+}
+
+.show-sm-only {
+  display: none;
+  @media (max-width: $breakpoint-sm-max) {
+    display: block;
+  }
+}
+
+.show-md-only {
+  display: none;
+  @media (max-width: $breakpoint-md-max) {
+    display: block;
+  }
+}
+
+.show-lg-only {
+  display: none;
+  @media (max-width: $breakpoint-lg-max) {
+    display: block;
+  }
+}
+
+// ============================================================================
+// Responsive Adjustments
+// ============================================================================
+
+@media (max-width: $breakpoint-lg-max) {
+  .editor-toolbar {
+    padding: 4px 8px;
+    gap: 2px;
+
+    mat-divider[vertical] {
+      margin: 0 4px;
+    }
+
+    button[mat-icon-button] {
+      width: 32px;
+      height: 32px;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+}
+
+@media (max-width: $breakpoint-md-max) {
+  .editor-toolbar {
+    padding: 4px 6px;
+
+    mat-divider[vertical] {
+      height: 20px;
+      margin: 0 3px;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-sm-max) {
+  .editor-toolbar {
+    padding: 4px;
+
+    mat-divider[vertical] {
+      margin: 0 2px;
+    }
+
+    button[mat-icon-button] {
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      min-height: 34px;
+    }
+  }
+}
+
+// Touch optimizations
+@media (hover: none) and (pointer: coarse) {
+  button[mat-icon-button] {
+    min-width: 40px;
+    min-height: 40px;
+
+    &:hover {
+      background-color: transparent;
+    }
+
+    &:active {
+      background-color: rgba(0, 0, 0, 0.12);
+    }
+
+    &.active {
+      background-color: rgba(25, 118, 210, 0.18);
+    }
+  }
+
+  .color-btn {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+  }
+}

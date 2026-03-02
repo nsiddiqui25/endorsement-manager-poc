@@ -1,0 +1,46 @@
+<div
+  class="mini-editor-container"
+  [class.focused]="isFocused()"
+  [class.disabled]="disabled()"
+  [class.exceeded]="isExceeded()"
+  [style.width]="widthStyle()"
+  [attr.data-theme]="theme()">
+
+  <!-- Floating Toolbar -->
+  <div 
+    class="toolbar-wrapper"
+    [style.top]="toolbarPosition().top"
+    [style.left]="toolbarPosition().left">
+    <dg-floating-toolbar
+      [config]="config()"
+      [formattingState]="formattingState()"
+      [visible]="isFocused() || isMenuOpen()"
+      (command)="onCommand($event)"
+      (menuOpened)="onMenuOpened()"
+      (menuClosed)="onMenuClosed()" />
+  </div>
+
+  <!-- Editable Content Area -->
+  <div
+    #editor
+    class="editor-content"
+    contenteditable="true"
+    role="textbox"
+    aria-multiline="true"
+    [attr.aria-label]="ariaLabel()"
+    [attr.aria-placeholder]="placeholder()"
+    [attr.aria-disabled]="disabled()"
+    [attr.data-placeholder]="placeholder()"
+    [class.empty]="isEmpty()"
+    [style.min-height]="heightStyle()"
+    spellcheck="true"
+    (input)="onInput()"
+    (focus)="onFocus()"
+    (blur)="onBlur()"
+    (mousedown)="onMouseDown($event)"
+    (keydown)="onKeyDown($event)"
+    (mouseup)="onSelectionChange()"
+    (keyup)="onSelectionChange()">
+  </div>
+
+</div>

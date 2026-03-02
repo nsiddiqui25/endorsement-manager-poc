@@ -1,0 +1,10 @@
+<div class="doc-preview">
+  @if (safeUrl) {
+    <iframe [src]="safeUrl" [attr.title]="title"></iframe>
+  } @else {
+    <div class="doc-preview-empty">No document available.</div>
+  }
+  <div class="doc-preview-actions">
+    <a class="btn" [href]="url" target="_blank" rel="noopener">Open in new tab</a>
+  </div>
+</div>
