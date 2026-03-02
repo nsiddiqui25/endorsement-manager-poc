@@ -31,32 +31,122 @@
 
 .secondary-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 0.5fr);
 }
 
 .field {
   display: grid;
-  gap: 6px;
+  gap: 5px;
 }
 
 .field span {
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .field input {
   width: 100%;
-  padding: 10px 12px;
+  height: 40px;
+  padding: 0 12px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: #fff;
   font-size: 0.9rem;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+  }
+}
+
+// ---- Custom combobox ----
+.combo-wrapper {
+  position: relative;
+
+  input {
+    padding-right: 32px; // room for chevron
+  }
+}
+
+.combo-chevron {
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--muted);
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+.combo-dropdown {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 200;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.combo-empty {
+  padding: 10px 14px;
+  color: var(--muted);
+  font-size: 0.87rem;
+  font-style: italic;
+}
+
+.combo-option {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover,
+  &.is-highlighted {
+    background: #f0f4ff;
+  }
+
+  &[aria-selected='true'] .option-code {
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+}
+
+.option-code {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.option-desc {
+  color: var(--muted);
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .toolbar-action {
   display: flex;
+  align-items: flex-end;
   justify-content: flex-end;
+  padding-bottom: 0;
 }
 
 .card-grid {
@@ -120,13 +210,17 @@
 }
 
 .btn {
+  height: 40px;
   border: 1px solid var(--line);
   background: #fff;
   color: var(--ink);
   border-radius: 10px;
-  padding: 8px 14px;
+  padding: 0 18px;
   font-weight: 600;
+  font-size: 0.88rem;
   cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .btn.primary {

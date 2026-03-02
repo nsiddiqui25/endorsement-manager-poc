@@ -75,8 +75,16 @@ export class PackageManagerModalComponent {
   readonly availableSearch = signal('');
   readonly selectedSearch = signal('');
 
-  private readonly selectedPolicyFormCode = signal('');
-  private readonly selectedPackageId = signal('');
+  protected readonly selectedPolicyFormCode = signal('');
+  protected readonly selectedPackageId = signal('');
+
+  // Combobox state – policy form
+  readonly policyFormDropdownOpen = signal(false);
+  readonly policyFormHighlightedIndex = signal(-1);
+
+  // Combobox state – package picker
+  readonly packagePickerDropdownOpen = signal(false);
+  readonly packagePickerHighlightedIndex = signal(-1);
   private readonly selectedVersionIds = signal<Set<number>>(new Set<number>());
 
   readonly policyFormOptions = POLICY_FORM_OPTIONS;
@@ -130,12 +138,31 @@ export class PackageManagerModalComponent {
     }))
   );
 
+  readonly filteredPolicyFormOptions = computed(() => {
+    const q = this.policyFormInput().trim().toLowerCase();
+    if (!q) return this.policyFormOptions as readonly PolicyFormOption[];
+    return this.policyFormOptions.filter(
+      (o) => o.code.toLowerCase().includes(q) || o.description.toLowerCase().includes(q)
+    );
+  });
+
+  readonly filteredPackagePickerOptions = computed(() => {
+    const q = this.packagePickerInput().trim().toLowerCase();
+    const opts = this.packagePickerOptions();
+    if (!q) return opts;
+    return opts.filter((o) => o.label.toLowerCase().includes(q) || o.id.toLowerCase().includes(q));
+  });
+
   constructor() {
     this.resetForNewMode();
   }
 
   setMode(mode: PackageMode): void {
     this.mode.set(mode);
+    this.policyFormDropdownOpen.set(false);
+    this.packagePickerDropdownOpen.set(false);
+    this.policyFormHighlightedIndex.set(-1);
+    this.packagePickerHighlightedIndex.set(-1);
 
     if (mode === 'new') {
       this.resetForNewMode();
@@ -153,10 +180,52 @@ export class PackageManagerModalComponent {
   onPolicyFormInputChange(value: string): void {
     this.policyFormInput.set(value);
     this.selectedPolicyFormCode.set(this.resolvePolicyFormCode(value));
+    this.policyFormDropdownOpen.set(true);
+    this.policyFormHighlightedIndex.set(-1);
+  }
+
+  openPolicyFormDropdown(): void {
+    this.policyFormDropdownOpen.set(true);
+    this.policyFormHighlightedIndex.set(-1);
+  }
+
+  blurPolicyFormDropdown(): void {
+    setTimeout(() => this.policyFormDropdownOpen.set(false), 150);
+  }
+
+  selectPolicyFormOption(option: PolicyFormOption): void {
+    this.policyFormInput.set(this.getPolicyFormOptionLabel(option));
+    this.selectedPolicyFormCode.set(option.code);
+    this.policyFormDropdownOpen.set(false);
+    this.policyFormHighlightedIndex.set(-1);
+  }
+
+  onPolicyFormKeydown(event: KeyboardEvent): void {
+    const options = this.filteredPolicyFormOptions();
+    const current = this.policyFormHighlightedIndex();
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.policyFormDropdownOpen.set(true);
+      this.policyFormHighlightedIndex.set(Math.min(current + 1, options.length - 1));
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.policyFormHighlightedIndex.set(Math.max(current - 1, 0));
+    } else if (event.key === 'Enter') {
+      const option = options[current];
+      if (option) {
+        event.preventDefault();
+        this.selectPolicyFormOption(option);
+      }
+    } else if (event.key === 'Escape') {
+      this.policyFormDropdownOpen.set(false);
+      this.policyFormHighlightedIndex.set(-1);
+    }
   }
 
   onPackagePickerInputChange(value: string): void {
     this.packagePickerInput.set(value);
+    this.packagePickerDropdownOpen.set(true);
+    this.packagePickerHighlightedIndex.set(-1);
     const normalized = value.trim().toLowerCase();
     if (!normalized) {
       this.selectedPackageId.set('');
@@ -177,6 +246,44 @@ export class PackageManagerModalComponent {
     }
 
     this.loadExistingPackage(matched.id);
+  }
+
+  openPackagePickerDropdown(): void {
+    this.packagePickerDropdownOpen.set(true);
+    this.packagePickerHighlightedIndex.set(-1);
+  }
+
+  blurPackagePickerDropdown(): void {
+    setTimeout(() => this.packagePickerDropdownOpen.set(false), 150);
+  }
+
+  selectPackagePickerOption(option: { id: string; label: string }): void {
+    this.packagePickerInput.set(option.label);
+    this.onPackagePickerInputChange(option.label);
+    this.packagePickerDropdownOpen.set(false);
+    this.packagePickerHighlightedIndex.set(-1);
+  }
+
+  onPackagePickerKeydown(event: KeyboardEvent): void {
+    const options = this.filteredPackagePickerOptions();
+    const current = this.packagePickerHighlightedIndex();
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.packagePickerDropdownOpen.set(true);
+      this.packagePickerHighlightedIndex.set(Math.min(current + 1, options.length - 1));
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.packagePickerHighlightedIndex.set(Math.max(current - 1, 0));
+    } else if (event.key === 'Enter') {
+      const option = options[current];
+      if (option) {
+        event.preventDefault();
+        this.selectPackagePickerOption(option);
+      }
+    } else if (event.key === 'Escape') {
+      this.packagePickerDropdownOpen.set(false);
+      this.packagePickerHighlightedIndex.set(-1);
+    }
   }
 
   moveToSelected(versionId: number): void {
