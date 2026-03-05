@@ -194,7 +194,6 @@
         <div class="grid-header">
           <span></span>
           <span>Endorsement</span>
-          <span>Optional</span>
         </div>
         @for (sel of filteredSelectedDisplay; track sel.instanceId) {
           <div
@@ -248,13 +247,6 @@
                 <span class="removed-stage">{{ getRemovedStageLabel(sel) }}</span>
               }
             </span>
-            <input
-              type="checkbox"
-              [checked]="sel.optional"
-              [disabled]="sel.status === 'removed'"
-              (click)="$event.stopPropagation()"
-              (change)="toggleOptional(sel.instanceId, $any($event.target).checked)"
-            />
           </div>
         }
         <div class="grid-footer">Use the trash icon to remove an endorsement.</div>

@@ -28,7 +28,6 @@ type PolicyStage = 'quote' | 'bind' | 'issue' | 'midterm';
 interface SelectedEndorsement {
   instanceId: number;
   versionId: number;
-  optional: boolean;
   statusByStage: Record<PolicyStage, SelectedStatus>;
 }
 
@@ -348,43 +347,36 @@ export class App {
     {
       instanceId: 10001,
       versionId: 2001,
-      optional: true,
       statusByStage: { quote: 'active', bind: 'active', issue: 'active', midterm: 'active' }
     },
     {
       instanceId: 10002,
       versionId: 2006,
-      optional: false,
       statusByStage: { quote: 'removed', bind: 'removed', issue: 'removed', midterm: 'removed' }
     },
     {
       instanceId: 10003,
       versionId: 2013,
-      optional: false,
       statusByStage: { quote: 'renewal', bind: 'renewal', issue: 'renewal', midterm: 'renewal' }
     },
     {
       instanceId: 10004,
       versionId: 2015,
-      optional: false,
       statusByStage: { quote: 'removed', bind: 'removed', issue: 'removed', midterm: 'removed' }
     },
     {
       instanceId: 10005,
       versionId: 2017,
-      optional: true,
       statusByStage: { quote: 'active', bind: 'active', issue: 'active', midterm: 'active' }
     },
     {
       instanceId: 10006,
       versionId: 2019,
-      optional: false,
       statusByStage: { quote: 'active', bind: 'active', issue: 'active', midterm: 'active' }
     },
     {
       instanceId: 10007,
       versionId: 2018,
-      optional: false,
       statusByStage: { quote: 'invalid', bind: 'invalid', issue: 'invalid', midterm: 'invalid' }
     }
   ];
@@ -617,13 +609,6 @@ export class App {
     }
     this.setStageStatus(selectedItem, this.policyStage, 'active');
     this.showToast(`Reactivated ${this.getEndorsementLabel(selectedItem.versionId)}`, 'activate');
-  }
-
-  toggleOptional(instanceId: number, value: boolean): void {
-    const selected = this.selected.find((item) => item.instanceId === instanceId);
-    if (selected) {
-      selected.optional = value;
-    }
   }
 
   onShowAllChange(): void {
@@ -1047,7 +1032,6 @@ export class App {
     this.selected.push({
       instanceId: this.getNextUniqueInstanceId(),
       versionId: id,
-      optional: false,
       statusByStage: { quote: 'active', bind: 'active', issue: 'active', midterm: 'active' }
     });
     return true;
