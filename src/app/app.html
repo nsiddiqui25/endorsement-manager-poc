@@ -77,7 +77,10 @@
         <div class="filter-actions">
           <button class="btn primary" type="button" (click)="addSelectedPackage()">Apply Package</button>
           <button class="btn primary" type="button" (click)="openCreatePackageModal()">
-            Create Package
+            Create/Update Package
+          </button>
+          <button class="btn primary" type="button" (click)="openCreatePackageFromSelectedModal()">
+            Create Package From Selected Endorsements
           </button>
         </div>
       </div>      
@@ -278,7 +281,7 @@
   }
 
   @if (activeModal) {
-    <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal-backdrop" (click)="activeModal !== 'create-package' && closeModal()">
       <div
         class="modal"
         [class.view-text]="activeModal === 'view-text'"
@@ -346,7 +349,8 @@
             [endorsementGroups]="endorsementGroups"
             [packages]="packages"
             [packageSelections]="packageSelections"
-            [initiallySelectedVersionIds]="selectedActiveVersionIds"
+            [initiallySelectedVersionIds]="modalInitialVersionIds"
+            [initialPolicyForm]="modalInitialPolicyForm"
             (close)="closeModal()"
             (createPackage)="onCreatePackage($event)"
             (updatePackage)="onUpdatePackage($event)"

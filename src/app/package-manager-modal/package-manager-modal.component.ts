@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 interface EndorsementVersion {
@@ -12,6 +12,7 @@ interface EndorsementVersion {
 interface EndorsementGroup {
   number: string;
   title: string;
+  policyForm?: string;
   versions: EndorsementVersion[];
 }
 
@@ -43,12 +44,12 @@ interface PolicyFormOption {
 }
 
 const POLICY_FORM_OPTIONS: readonly PolicyFormOption[] = [
-  { code: 'D11100', description: 'Primary Policy Form' },
-  { code: 'D26100', description: 'COA/HOA Policy Form' },
-  { code: 'D32100', description: 'Fiduciary Policy Form' },
-  { code: 'D55100', description: 'Legacy Combo Policy Form' },
-  { code: 'D56100', description: 'Combo Policy Form' },
-  { code: 'D71100', description: 'EPL Policy Form' }
+  { code: 'D11', description: 'EPL Policy Form' },
+  { code: 'D26', description: 'COA/HOA Policy Form' },
+  { code: 'D32', description: 'Fiduciary Policy Form' },
+  { code: 'D55', description: 'Legacy Combo Policy Form' },
+  { code: 'D56', description: 'Combo Policy Form' },
+  { code: 'D71', description: 'EPL Policy Form' }
 ] as const;
 
 @Component({
@@ -58,11 +59,12 @@ const POLICY_FORM_OPTIONS: readonly PolicyFormOption[] = [
   styleUrl: './package-manager-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PackageManagerModalComponent {
+export class PackageManagerModalComponent implements OnInit {
   readonly endorsementGroups = input.required<EndorsementGroup[]>();
   readonly packages = input.required<PackageManagerPackage[]>();
   readonly packageSelections = input.required<Record<string, number[]>>();
   readonly initiallySelectedVersionIds = input<number[]>([]);
+  readonly initialPolicyForm = input<string>('');;
 
   readonly close = output<void>();
   readonly createPackage = output<PackageManagerCreateEvent>();
@@ -70,7 +72,9 @@ export class PackageManagerModalComponent {
 
   readonly mode = signal<PackageMode>('new');
   readonly policyFormInput = signal('');
+  readonly policyFormFilterQuery = signal('');
   readonly packagePickerInput = signal('');
+  readonly packagePickerFilterQuery = signal('');
   readonly packageNameInput = signal('');
   readonly availableSearch = signal('');
   readonly selectedSearch = signal('');
@@ -95,6 +99,18 @@ export class PackageManagerModalComponent {
       .sort((left, right) => left.code.localeCompare(right.code))
   );
 
+  readonly versionPolicyFormMap = computed(() => {
+    const map = new Map<number, string>();
+    for (const group of this.endorsementGroups()) {
+      if (group.policyForm) {
+        for (const version of group.versions) {
+          map.set(version.id, group.policyForm);
+        }
+      }
+    }
+    return map;
+  });
+
   readonly selectedCount = computed(() => this.selectedVersionIds().size);
 
   readonly selectedVersions = computed(() => {
@@ -109,10 +125,18 @@ export class PackageManagerModalComponent {
   });
 
   readonly availableVersions = computed(() => {
+    const policyFormCode = this.selectedPolicyFormCode();
+    if (!policyFormCode) {
+      return [];
+    }
     const selected = this.selectedVersionIds();
     const query = this.availableSearch().trim().toLowerCase();
+    const policyFormMap = this.versionPolicyFormMap();
     return this.allVersions().filter((version) => {
       if (selected.has(version.id)) {
+        return false;
+      }
+      if (policyFormMap.get(version.id) !== policyFormCode) {
         return false;
       }
       return this.matchesSearch(version, query);
@@ -139,7 +163,7 @@ export class PackageManagerModalComponent {
   );
 
   readonly filteredPolicyFormOptions = computed(() => {
-    const q = this.policyFormInput().trim().toLowerCase();
+    const q = this.policyFormFilterQuery().trim().toLowerCase();
     if (!q) return this.policyFormOptions as readonly PolicyFormOption[];
     return this.policyFormOptions.filter(
       (o) => o.code.toLowerCase().includes(q) || o.description.toLowerCase().includes(q)
@@ -147,13 +171,15 @@ export class PackageManagerModalComponent {
   });
 
   readonly filteredPackagePickerOptions = computed(() => {
-    const q = this.packagePickerInput().trim().toLowerCase();
+    const q = this.packagePickerFilterQuery().trim().toLowerCase();
     const opts = this.packagePickerOptions();
     if (!q) return opts;
     return opts.filter((o) => o.label.toLowerCase().includes(q) || o.id.toLowerCase().includes(q));
   });
 
-  constructor() {
+  constructor() {}
+
+  ngOnInit(): void {
     this.resetForNewMode();
   }
 
@@ -170,21 +196,25 @@ export class PackageManagerModalComponent {
     }
 
     this.packagePickerInput.set('');
+    this.packagePickerFilterQuery.set('');
     this.selectedPackageId.set('');
     this.packageNameInput.set('');
     this.policyFormInput.set('');
+    this.policyFormFilterQuery.set('');
     this.selectedPolicyFormCode.set('');
     this.selectedVersionIds.set(new Set<number>());
   }
 
   onPolicyFormInputChange(value: string): void {
     this.policyFormInput.set(value);
+    this.policyFormFilterQuery.set(value);
     this.selectedPolicyFormCode.set(this.resolvePolicyFormCode(value));
     this.policyFormDropdownOpen.set(true);
     this.policyFormHighlightedIndex.set(-1);
   }
 
   openPolicyFormDropdown(): void {
+    this.policyFormFilterQuery.set('');
     this.policyFormDropdownOpen.set(true);
     this.policyFormHighlightedIndex.set(-1);
   }
@@ -195,6 +225,7 @@ export class PackageManagerModalComponent {
 
   selectPolicyFormOption(option: PolicyFormOption): void {
     this.policyFormInput.set(this.getPolicyFormOptionLabel(option));
+    this.policyFormFilterQuery.set('');
     this.selectedPolicyFormCode.set(option.code);
     this.policyFormDropdownOpen.set(false);
     this.policyFormHighlightedIndex.set(-1);
@@ -224,6 +255,7 @@ export class PackageManagerModalComponent {
 
   onPackagePickerInputChange(value: string): void {
     this.packagePickerInput.set(value);
+    this.packagePickerFilterQuery.set(value);
     this.packagePickerDropdownOpen.set(true);
     this.packagePickerHighlightedIndex.set(-1);
     const normalized = value.trim().toLowerCase();
@@ -249,6 +281,7 @@ export class PackageManagerModalComponent {
   }
 
   openPackagePickerDropdown(): void {
+    this.packagePickerFilterQuery.set('');
     this.packagePickerDropdownOpen.set(true);
     this.packagePickerHighlightedIndex.set(-1);
   }
@@ -259,6 +292,7 @@ export class PackageManagerModalComponent {
 
   selectPackagePickerOption(option: { id: string; label: string }): void {
     this.packagePickerInput.set(option.label);
+    this.packagePickerFilterQuery.set('');
     this.onPackagePickerInputChange(option.label);
     this.packagePickerDropdownOpen.set(false);
     this.packagePickerHighlightedIndex.set(-1);
@@ -344,11 +378,26 @@ export class PackageManagerModalComponent {
     this.selectedVersionIds.set(selected);
     this.packageNameInput.set('');
     this.packagePickerInput.set('');
+    this.packagePickerFilterQuery.set('');
     this.selectedPackageId.set('');
-    this.policyFormInput.set('');
-    this.selectedPolicyFormCode.set('');
     this.availableSearch.set('');
     this.selectedSearch.set('');
+
+    const policyForm = this.initialPolicyForm();
+    if (policyForm) {
+      const option = this.policyFormOptions.find((o) => o.code === policyForm);
+      if (option) {
+        this.policyFormInput.set(this.getPolicyFormOptionLabel(option));
+      } else {
+        this.policyFormInput.set(policyForm);
+      }
+      this.policyFormFilterQuery.set('');
+      this.selectedPolicyFormCode.set(policyForm);
+    } else {
+      this.policyFormInput.set('');
+      this.policyFormFilterQuery.set('');
+      this.selectedPolicyFormCode.set('');
+    }
   }
 
   private loadExistingPackage(packageId: string): void {

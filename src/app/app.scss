@@ -788,7 +788,12 @@
 }
 
 .modal.package-manager-modal {
-	max-width: 1180px;
+	max-width: 1600px;
+	width: min(1600px, 96vw);
+	height: 82vh;
+	min-height: 600px;
+	padding: 24px 32px;
+	overflow: hidden;
 }
 
 .modal-header {

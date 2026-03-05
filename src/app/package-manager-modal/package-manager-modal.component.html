@@ -35,7 +35,14 @@
             (keydown)="onPolicyFormKeydown($event)"
             placeholder="Search/select policy form"
           />
-          <span class="combo-chevron" aria-hidden="true">&#9660;</span>
+          <button
+            class="combo-chevron"
+            type="button"
+            tabindex="-1"
+            aria-hidden="true"
+            (mousedown)="$event.preventDefault()"
+            (click)="openPolicyFormDropdown()"
+          >&#9660;</button>
           @if (policyFormDropdownOpen()) {
             <ul class="combo-dropdown" id="policy-form-listbox" role="listbox" aria-labelledby="policy-form-label">
               @if (filteredPolicyFormOptions().length === 0) {
@@ -101,7 +108,14 @@
             (keydown)="onPackagePickerKeydown($event)"
             placeholder="Search/select package"
           />
-          <span class="combo-chevron" aria-hidden="true">&#9660;</span>
+          <button
+            class="combo-chevron"
+            type="button"
+            tabindex="-1"
+            aria-hidden="true"
+            (mousedown)="$event.preventDefault()"
+            (click)="openPackagePickerDropdown()"
+          >&#9660;</button>
           @if (packagePickerDropdownOpen()) {
             <ul class="combo-dropdown" id="pkg-picker-listbox" role="listbox" aria-labelledby="pkg-picker-label">
               @if (filteredPackagePickerOptions().length === 0) {
@@ -166,7 +180,14 @@
             (keydown)="onPolicyFormKeydown($event)"
             placeholder="Search/select policy form"
           />
-          <span class="combo-chevron" aria-hidden="true">&#9660;</span>
+          <button
+            class="combo-chevron"
+            type="button"
+            tabindex="-1"
+            aria-hidden="true"
+            (mousedown)="$event.preventDefault()"
+            (click)="openPolicyFormDropdown()"
+          >&#9660;</button>
           @if (policyFormDropdownOpen()) {
             <ul class="combo-dropdown" id="policy-form-listbox-upd" role="listbox" aria-labelledby="policy-form-label-upd">
               @if (filteredPolicyFormOptions().length === 0) {
@@ -208,7 +229,17 @@
         @for (version of availableVersions(); track version.id) {
           <div class="list-row">
             <button class="icon-button add-button" type="button" (click)="moveToSelected(version.id)">+</button>
-            <span>{{ version.code }} - {{ version.name }}</span>
+            <span class="list-row-label">
+              <span class="list-row-text">{{ version.code }} - {{ version.name }}</span>
+              @if (version.description) {
+                <button
+                  class="info-icon"
+                  type="button"
+                  [attr.aria-label]="'Description for ' + version.code"
+                  (click)="$event.stopPropagation()"
+                >i<span class="info-tooltip" role="tooltip">{{ version.description }}</span></button>
+              }
+            </span>
           </div>
         }
       </div>
@@ -228,7 +259,17 @@
         @for (version of selectedVersions(); track version.id) {
           <div class="list-row">
             <button class="icon-button trash-button" type="button" (click)="moveToAvailable(version.id)">-</button>
-            <span>{{ version.code }} - {{ version.name }}</span>
+            <span class="list-row-label">
+              <span class="list-row-text">{{ version.code }} - {{ version.name }}</span>
+              @if (version.description) {
+                <button
+                  class="info-icon"
+                  type="button"
+                  [attr.aria-label]="'Description for ' + version.code"
+                  (click)="$event.stopPropagation()"
+                >i<span class="info-tooltip" role="tooltip">{{ version.description }}</span></button>
+              }
+            </span>
           </div>
         }
       </div>
