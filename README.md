@@ -287,3 +287,10 @@ The following steps document the work completed so far, in the order performed:
 	- Deleted the `selectedOptionalCount` and `selectedRemovedCount` getters from the component.
 	- Removed the `.summary-row` CSS rule.
 	- Files: src/app/app.html, src/app/app.ts, src/app/app.scss.
+
+42. **Removed Optional column from Selected Endorsements.**
+	- Removed the Optional header span and the optional checkbox from each selected row.
+	- Removed the `optional` field from the `SelectedEndorsement` interface and all hardcoded data entries.
+	- Deleted the `toggleOptional()` method.
+	- Updated selected-card grid columns from `32px 1fr 80px` to `32px 1fr`.
+	- Files: src/app/app.html, src/app/app.ts, src/app/app.scss.
