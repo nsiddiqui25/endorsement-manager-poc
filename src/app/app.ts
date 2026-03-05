@@ -538,14 +538,6 @@ export class App {
     return this.filteredSelectedDisplay.length;
   }
 
-  get selectedOptionalCount(): number {
-    return this.filteredSelectedDisplay.filter((item) => item.optional).length;
-  }
-
-  get selectedRemovedCount(): number {
-    return this.selected.filter((item) => this.getStageStatus(item) === 'removed').length;
-  }
-
   get mandatoryMissingCount(): number {
     return this.mandatoryEndorsementIds.filter((id) => !this.hasActiveSelection(id)).length;
   }

@@ -281,3 +281,9 @@ The following steps document the work completed so far, in the order performed:
 	- Added a unique-ID allocator for selected rows before pushing new entries.
 	- This restores reliable trash-icon removal and confirmation modal behavior after adding many endorsements.
 	- Files: endorsement-manager/src/app/app.ts.
+
+41. **Removed summary row from Selected Endorsements.**
+	- Removed the summary row showing Optional and Removed counts from the Selected Endorsements list.
+	- Deleted the `selectedOptionalCount` and `selectedRemovedCount` getters from the component.
+	- Removed the `.summary-row` CSS rule.
+	- Files: src/app/app.html, src/app/app.ts, src/app/app.scss.

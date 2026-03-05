@@ -424,17 +424,6 @@
 	outline: none;
 }
 
-.summary-row {
-	display: grid;
-	grid-template-columns: 32px 1fr 80px;
-	align-items: center;
-	font-size: 0.75rem;
-	color: var(--muted);
-	padding: 8px 8px 10px;
-	border-bottom: 1px dashed var(--line);
-	background: #fcfbf8;
-}
-
 .group-title {
 	font-size: 0.85rem;
 	font-weight: 600;

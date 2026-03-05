@@ -196,11 +196,6 @@
           <span>Endorsement</span>
           <span>Optional</span>
         </div>
-        <div class="summary-row">
-          <span></span>
-          <span>Optional: {{ selectedOptionalCount }}</span>
-          <span>Removed: {{ selectedRemovedCount }}</span>
-        </div>
         @for (sel of filteredSelectedDisplay; track sel.instanceId) {
           <div
             class="grid-row"
