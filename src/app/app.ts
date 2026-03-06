@@ -88,6 +88,7 @@ export class App {
   readonly accountPolicyForm = 'D26';
   modalInitialVersionIds: number[] = [];
   modalInitialPolicyForm = '';
+  modalLockPolicyForm = false;
   readonly stageOptions: Array<{ id: PolicyStage; label: string }> = [
     { id: 'quote', label: 'Quoted' },
     { id: 'bind', label: 'Bound' },
@@ -1406,12 +1407,14 @@ export class App {
   openCreatePackageModal(): void {
     this.modalInitialVersionIds = [];
     this.modalInitialPolicyForm = '';
+    this.modalLockPolicyForm = false;
     this.activeModal = 'create-package';
   }
 
   openCreatePackageFromSelectedModal(): void {
     this.modalInitialVersionIds = [...this.selectedActiveVersionIds];
     this.modalInitialPolicyForm = this.accountPolicyForm;
+    this.modalLockPolicyForm = true;
     this.activeModal = 'create-package';
   }
 

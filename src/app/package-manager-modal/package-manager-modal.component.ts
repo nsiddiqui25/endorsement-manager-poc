@@ -64,7 +64,8 @@ export class PackageManagerModalComponent implements OnInit {
   readonly packages = input.required<PackageManagerPackage[]>();
   readonly packageSelections = input.required<Record<string, number[]>>();
   readonly initiallySelectedVersionIds = input<number[]>([]);
-  readonly initialPolicyForm = input<string>('');;
+  readonly initialPolicyForm = input<string>('');
+  readonly lockPolicyForm = input<boolean>(false);
 
   readonly close = output<void>();
   readonly createPackage = output<PackageManagerCreateEvent>();
@@ -90,6 +91,7 @@ export class PackageManagerModalComponent implements OnInit {
   readonly packagePickerDropdownOpen = signal(false);
   readonly packagePickerHighlightedIndex = signal(-1);
   private readonly selectedVersionIds = signal<Set<number>>(new Set<number>());
+  readonly collapsedGroups = signal<Set<string>>(new Set<string>());
 
   readonly policyFormOptions = POLICY_FORM_OPTIONS;
 
@@ -124,23 +126,27 @@ export class PackageManagerModalComponent implements OnInit {
     });
   });
 
-  readonly availableVersions = computed(() => {
+  readonly availableGroups = computed(() => {
     const policyFormCode = this.selectedPolicyFormCode();
-    if (!policyFormCode) {
-      return [];
-    }
-    const selected = this.selectedVersionIds();
+    if (!policyFormCode) return [];
     const query = this.availableSearch().trim().toLowerCase();
-    const policyFormMap = this.versionPolicyFormMap();
-    return this.allVersions().filter((version) => {
-      if (selected.has(version.id)) {
-        return false;
-      }
-      if (policyFormMap.get(version.id) !== policyFormCode) {
-        return false;
-      }
-      return this.matchesSearch(version, query);
-    });
+    return this.endorsementGroups()
+      .filter((group) => group.policyForm === policyFormCode)
+      .map((group) => ({
+        number: group.number,
+        title: group.title,
+        versions: group.versions
+          .filter((v) => this.matchesSearch(v, query))
+          .sort((a, b) => a.code.localeCompare(b.code)),
+      }))
+      .filter((group) => group.versions.length > 0);
+  });
+
+  readonly expandAllLabel = computed(() => {
+    const groups = this.availableGroups();
+    if (groups.length === 0) return 'Expand All';
+    const collapsed = this.collapsedGroups();
+    return groups.every((g) => collapsed.has(g.number)) ? 'Expand All' : 'Collapse All';
   });
 
   readonly canSubmit = computed(() => {
@@ -203,6 +209,7 @@ export class PackageManagerModalComponent implements OnInit {
     this.policyFormFilterQuery.set('');
     this.selectedPolicyFormCode.set('');
     this.selectedVersionIds.set(new Set<number>());
+    this.collapsedGroups.set(new Set<string>());
   }
 
   onPolicyFormInputChange(value: string): void {
@@ -214,6 +221,7 @@ export class PackageManagerModalComponent implements OnInit {
   }
 
   openPolicyFormDropdown(): void {
+    if (this.lockPolicyForm()) return;
     this.policyFormFilterQuery.set('');
     this.policyFormDropdownOpen.set(true);
     this.policyFormHighlightedIndex.set(-1);
@@ -373,9 +381,59 @@ export class PackageManagerModalComponent implements OnInit {
     return pkg.name;
   }
 
+  isVersionSelected(versionId: number): boolean {
+    return this.selectedVersionIds().has(versionId);
+  }
+
+  onVersionCheckChange(versionId: number, checked: boolean): void {
+    if (checked) {
+      this.moveToSelected(versionId);
+    } else {
+      this.moveToAvailable(versionId);
+    }
+  }
+
+  toggleExpandAllGroups(): void {
+    const groups = this.availableGroups();
+    const collapsed = this.collapsedGroups();
+    const allCollapsed = groups.every((g) => collapsed.has(g.number));
+    this.collapsedGroups.set(allCollapsed ? new Set() : new Set(groups.map((g) => g.number)));
+  }
+
+  expandSelectedGroups(): void {
+    const selected = this.selectedVersionIds();
+    const groupsWithSelected = this.availableGroups()
+      .filter((g) => g.versions.some((v) => selected.has(v.id)))
+      .map((g) => g.number);
+    this.collapsedGroups.update((current) => {
+      const next = new Set(current);
+      for (const num of groupsWithSelected) {
+        next.delete(num);
+      }
+      return next;
+    });
+  }
+
+  toggleGroup(groupNumber: string): void {
+    this.collapsedGroups.update((current) => {
+      const next = new Set(current);
+      if (next.has(groupNumber)) {
+        next.delete(groupNumber);
+      } else {
+        next.add(groupNumber);
+      }
+      return next;
+    });
+  }
+
+  isGroupCollapsed(groupNumber: string): boolean {
+    return this.collapsedGroups().has(groupNumber);
+  }
+
   private resetForNewMode(): void {
     const selected = new Set<number>(this.initiallySelectedVersionIds());
     this.selectedVersionIds.set(selected);
+    this.collapsedGroups.set(new Set<string>());
     this.packageNameInput.set('');
     this.packagePickerInput.set('');
     this.packagePickerFilterQuery.set('');
@@ -397,6 +455,14 @@ export class PackageManagerModalComponent implements OnInit {
       this.policyFormInput.set('');
       this.policyFormFilterQuery.set('');
       this.selectedPolicyFormCode.set('');
+    }
+
+    // If opened with pre-selected versions, collapse all groups except those containing selections
+    if (selected.size > 0) {
+      const toCollapse = this.availableGroups()
+        .filter((g) => !g.versions.some((v) => selected.has(v.id)))
+        .map((g) => g.number);
+      this.collapsedGroups.set(new Set(toCollapse));
     }
   }
 

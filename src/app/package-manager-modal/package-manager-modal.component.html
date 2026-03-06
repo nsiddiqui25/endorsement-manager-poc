@@ -34,6 +34,7 @@
             (blur)="blurPolicyFormDropdown()"
             (keydown)="onPolicyFormKeydown($event)"
             placeholder="Search/select policy form"
+            [disabled]="lockPolicyForm()"
           />
           <button
             class="combo-chevron"
@@ -42,6 +43,7 @@
             aria-hidden="true"
             (mousedown)="$event.preventDefault()"
             (click)="openPolicyFormDropdown()"
+            [disabled]="lockPolicyForm()"
           >&#9660;</button>
           @if (policyFormDropdownOpen()) {
             <ul class="combo-dropdown" id="policy-form-listbox" role="listbox" aria-labelledby="policy-form-label">
@@ -77,11 +79,6 @@
         />
       </div>
 
-      <div class="toolbar-action">
-        <button class="btn primary" type="button" [disabled]="!canSubmit()" (click)="submit()">
-          Create Package
-        </button>
-      </div>
     </div>
   } @else {
     <div class="toolbar-row">
@@ -149,11 +146,6 @@
         />
       </div>
 
-      <div class="toolbar-action">
-        <button class="btn primary" type="button" [disabled]="!canSubmit()" (click)="submit()">
-          Update Package
-        </button>
-      </div>
     </div>
 
     <div class="secondary-row">
@@ -216,7 +208,13 @@
 
   <div class="card-grid">
     <section class="list-card">
-      <div class="list-title">Available Endorsements</div>
+      <div class="list-title">
+        <span>Available Endorsements</span>
+        <div class="list-title-actions">
+          <button class="btn small primary" type="button" (click)="toggleExpandAllGroups()">{{ expandAllLabel() }}</button>
+          <button class="btn small primary" type="button" (click)="expandSelectedGroups()">Expand Selected</button>
+        </div>
+      </div>
       <div class="list-search">
         <input
           type="text"
@@ -226,20 +224,38 @@
         />
       </div>
       <div class="list-body">
-        @for (version of availableVersions(); track version.id) {
-          <div class="list-row">
-            <button class="icon-button add-button" type="button" (click)="moveToSelected(version.id)">+</button>
-            <span class="list-row-label">
-              <span class="list-row-text">{{ version.code }} - {{ version.name }}</span>
-              @if (version.description) {
-                <button
-                  class="info-icon"
-                  type="button"
-                  [attr.aria-label]="'Description for ' + version.code"
-                  (click)="$event.stopPropagation()"
-                >i<span class="info-tooltip" role="tooltip">{{ version.description }}</span></button>
+        @for (group of availableGroups(); track group.number) {
+          <div class="group">
+            <div class="group-row">
+              <button class="icon-button add-button" type="button" (click)="toggleGroup(group.number)">
+                {{ isGroupCollapsed(group.number) ? '+' : '-' }}
+              </button>
+              <span>{{ group.number }} - {{ group.title }}</span>
+            </div>
+            <div class="group-items" [class.is-collapsed]="isGroupCollapsed(group.number)">
+              @for (version of group.versions; track version.id) {
+                <div class="list-row">
+                  <input
+                    class="version-checkbox"
+                    type="checkbox"
+                    [checked]="isVersionSelected(version.id)"
+                    (click)="$event.stopPropagation()"
+                    (change)="onVersionCheckChange(version.id, $any($event.target).checked)"
+                  />
+                  <span class="list-row-label">
+                    <span class="list-row-text">{{ version.code }} - {{ version.name }}</span>
+                    @if (version.description) {
+                      <button
+                        class="info-icon"
+                        type="button"
+                        [attr.aria-label]="'Description for ' + version.code"
+                        (click)="$event.stopPropagation()"
+                      >i<span class="info-tooltip" role="tooltip">{{ version.description }}</span></button>
+                    }
+                  </span>
+                </div>
               }
-            </span>
+            </div>
           </div>
         }
       </div>

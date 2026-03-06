@@ -183,10 +183,22 @@
 }
 
 .list-title {
-  padding: 10px 12px;
+  height: 40px;
+  padding: 0 12px;
   font-weight: 700;
   border-bottom: 1px solid var(--line);
   background: #f7f4ee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+.list-title-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .list-search {
@@ -267,6 +279,18 @@
   cursor: not-allowed;
 }
 
+.btn.small {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 0.78rem;
+}
+
+.version-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
 .icon-button {
   width: 22px;
   height: 22px;
@@ -277,6 +301,27 @@
   font-size: 0.95rem;
   line-height: 1;
   cursor: pointer;
+}
+
+.group-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  background: #f7f4ee;
+  border-bottom: 1px solid var(--line);
+}
+
+.group-items {
+  &.is-collapsed {
+    display: none;
+  }
+
+  .list-row {
+    padding-left: 20px;
+  }
 }
 
 .add-button {
