@@ -60,7 +60,8 @@
                   (mousedown)="$event.preventDefault()"
                   (click)="selectPolicyFormOption(option)"
                 >
-                  <span class="option-code">{{ option.code }}</span>
+                  <span class="option-code">{{ option.displayCode }}</span>
+                  <span class="option-sep"> - </span>
                   <span class="option-desc">{{ option.description }}</span>
                 </li>
               }
@@ -171,6 +172,7 @@
             (blur)="blurPolicyFormDropdown()"
             (keydown)="onPolicyFormKeydown($event)"
             placeholder="Search/select policy form"
+            [disabled]="isUpdatePolicyFormLocked()"
           />
           <button
             class="combo-chevron"
@@ -179,6 +181,7 @@
             aria-hidden="true"
             (mousedown)="$event.preventDefault()"
             (click)="openPolicyFormDropdown()"
+            [disabled]="isUpdatePolicyFormLocked()"
           >&#9660;</button>
           @if (policyFormDropdownOpen()) {
             <ul class="combo-dropdown" id="policy-form-listbox-upd" role="listbox" aria-labelledby="policy-form-label-upd">
@@ -195,7 +198,8 @@
                   (mousedown)="$event.preventDefault()"
                   (click)="selectPolicyFormOption(option)"
                 >
-                  <span class="option-code">{{ option.code }}</span>
+                  <span class="option-code">{{ option.displayCode }}</span>
+                  <span class="option-sep"> - </span>
                   <span class="option-desc">{{ option.description }}</span>
                 </li>
               }

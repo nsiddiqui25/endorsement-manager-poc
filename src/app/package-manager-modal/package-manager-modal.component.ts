@@ -20,6 +20,7 @@ export interface PackageManagerPackage {
   id: string;
   name: string;
   policyForm?: string;
+  formCode?: string;
   isCustom?: boolean;
 }
 
@@ -40,16 +41,17 @@ type PackageMode = 'new' | 'update';
 
 interface PolicyFormOption {
   code: string;
+  displayCode: string;
   description: string;
 }
 
 const POLICY_FORM_OPTIONS: readonly PolicyFormOption[] = [
-  { code: 'D11', description: 'EPL Policy Form' },
-  { code: 'D26', description: 'COA/HOA Policy Form' },
-  { code: 'D32', description: 'Fiduciary Policy Form' },
-  { code: 'D55', description: 'Legacy Combo Policy Form' },
-  { code: 'D56', description: 'Combo Policy Form' },
-  { code: 'D71', description: 'EPL Policy Form' }
+  { code: 'D11', displayCode: 'D11100', description: 'EPL Policy Form' },
+  { code: 'D26', displayCode: 'D26100', description: 'COA/HOA Policy Form' },
+  { code: 'D32', displayCode: 'D32000', description: 'Fiduciary Policy Form' },
+  { code: 'D55', displayCode: 'D55100', description: 'Legacy Combo Policy Form' },
+  { code: 'D56', displayCode: 'D56100', description: 'Combo Policy Form' },
+  { code: 'D71', displayCode: 'D71100', description: 'EPL Policy Form' }
 ] as const;
 
 @Component({
@@ -94,6 +96,8 @@ export class PackageManagerModalComponent implements OnInit {
   readonly collapsedGroups = signal<Set<string>>(new Set<string>());
 
   readonly policyFormOptions = POLICY_FORM_OPTIONS;
+
+  readonly isUpdatePolicyFormLocked = computed(() => this.mode() === 'update' && this.selectedPackageId() !== '');
 
   readonly allVersions = computed(() =>
     this.endorsementGroups()
@@ -221,7 +225,7 @@ export class PackageManagerModalComponent implements OnInit {
   }
 
   openPolicyFormDropdown(): void {
-    if (this.lockPolicyForm()) return;
+    if (this.lockPolicyForm() || this.isUpdatePolicyFormLocked()) return;
     this.policyFormFilterQuery.set('');
     this.policyFormDropdownOpen.set(true);
     this.policyFormHighlightedIndex.set(-1);
@@ -371,12 +375,12 @@ export class PackageManagerModalComponent implements OnInit {
   }
 
   getPolicyFormOptionLabel(option: PolicyFormOption): string {
-    return `${option.code} - ${option.description}`;
+    return `${option.displayCode} - ${option.description}`;
   }
 
   getPackageDisplayLabel(pkg: PackageManagerPackage): string {
     if (pkg.policyForm) {
-      return `${pkg.name} - ${pkg.policyForm}`;
+      return `${pkg.formCode ?? pkg.policyForm + '100'} - ${pkg.name}`;
     }
     return pkg.name;
   }
@@ -475,7 +479,10 @@ export class PackageManagerModalComponent implements OnInit {
     const policyFormCode = pkg.policyForm ?? '';
     this.selectedPackageId.set(pkg.id);
     this.packageNameInput.set(pkg.name);
-    this.policyFormInput.set(policyFormCode);
+
+    const option = this.policyFormOptions.find((o) => o.code === policyFormCode);
+    this.policyFormInput.set(option ? this.getPolicyFormOptionLabel(option) : policyFormCode);
+    this.policyFormFilterQuery.set('');
     this.selectedPolicyFormCode.set(policyFormCode);
 
     const selections = this.packageSelections()[pkg.id] ?? [];

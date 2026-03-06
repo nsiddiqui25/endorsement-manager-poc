@@ -36,6 +36,7 @@ interface PackageInfo {
   id: string;
   name: string;
   policyForm?: string;
+  formCode?: string;
   isCustom?: boolean;
 }
 
@@ -1096,7 +1097,7 @@ export class App {
 
   packages: PackageInfo[] = [
     { id: 'H11', name: 'EPL Package', policyForm: 'D71' },
-    { id: 'H12', name: 'Fiduciary Package', policyForm: 'D32' },
+    { id: 'H12', name: 'Fiduciary Package', policyForm: 'D32', formCode: 'D32000' },
     { id: 'H13', name: 'COA/HOA Package', policyForm: 'D26' },
     { id: 'H21', name: 'Combo Package', policyForm: 'D56' }
   ];
@@ -1507,7 +1508,7 @@ export class App {
 
   getPackageOptionLabel(pkg: PackageInfo): string {
     if (pkg.policyForm) {
-      return `${pkg.name} - ${pkg.policyForm}`;
+      return `${pkg.formCode ?? pkg.policyForm + '100'} - ${pkg.name}`;
     }
     return pkg.isCustom ? pkg.name : `${pkg.id} - ${pkg.name}`;
   }
