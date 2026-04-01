@@ -383,7 +383,7 @@
 
 .selected-card .grid-header,
 .selected-card .grid-row {
-	grid-template-columns: 32px 1fr 80px;
+	grid-template-columns: 32px 1fr;
 }
 
 .grid-header {
@@ -422,17 +422,6 @@
 .context-menu-item:focus-visible {
 	background: #f2efe8;
 	outline: none;
-}
-
-.summary-row {
-	display: grid;
-	grid-template-columns: 32px 1fr 80px;
-	align-items: center;
-	font-size: 0.75rem;
-	color: var(--muted);
-	padding: 8px 8px 10px;
-	border-bottom: 1px dashed var(--line);
-	background: #fcfbf8;
 }
 
 .group-title {
@@ -799,7 +788,12 @@
 }
 
 .modal.package-manager-modal {
-	max-width: 1180px;
+	max-width: 1600px;
+	width: min(1600px, 96vw);
+	height: 82vh;
+	min-height: 600px;
+	padding: 24px 32px;
+	overflow: hidden;
 }
 
 .modal-header {
